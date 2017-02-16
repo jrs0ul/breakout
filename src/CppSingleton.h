@@ -129,6 +129,7 @@ public:
     bool ReflectBricks;
     int NextLevelTimer;
 
+    int PadX;
 
         
     void CreatePrize(float x, float y);
@@ -182,6 +183,8 @@ public:
                 PaddRevive = false;
                 ReflectBricks = true;
                 NextLevelTimer = 0;
+
+                PadX = 0;
                 
                }
     

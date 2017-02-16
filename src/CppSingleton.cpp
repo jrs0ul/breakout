@@ -217,13 +217,13 @@ void Singleton::logic(){
         music.update();
     
     if (touches.down.count()){
-        MouseX = touches.down[0].v[0] - MouseX;
+        PadX = touches.down[0].v[0] - PadX;
     }
     if (touches.move.count()){
-        MouseX = touches.move[0].v[0] - MouseX;
+        PadX = touches.move[0].v[0] - PadX;
     }
     if (touches.up.count()){
-        MouseX = 0;
+        PadX = 0;
     }
    
     GameLoop();
@@ -304,7 +304,7 @@ void Singleton::CreatePrize(float x, float y){
 //-------------------------
 void Singleton::EliminateBrick(int tx, int ty,float speed){
 
-    int brickid=0;
+    int brickid = 0;
     int x,y;
     if (Map.tiles[ty][tx]%2!=0)
         x=tx*16+16;
@@ -312,7 +312,8 @@ void Singleton::EliminateBrick(int tx, int ty,float speed){
         x=tx*16;
     y=ty*16+8;
 
-    if (brickid = Map.removetile(tx,ty)){
+    brickid = Map.removetile(tx,ty);
+    if (brickid){
         if (brickid==3)
             CreatePrize(tx,ty);
         Score+=5*round(speed/DEFAULT_SPEED);
@@ -532,8 +533,8 @@ void Singleton::GameLoop(){
 
                 }   
                 //--Judinam pada
-                if ((padd.x+padd.length*16+16 + MouseX <SCREEN_WIDTH)&&
-                    (padd.x-16-padd.length * 16 + MouseX > 0)&&
+                if ((padd.x+padd.length*16+16 + PadX <SCREEN_WIDTH)&&
+                    (padd.x-16-padd.length * 16 + PadX > 0)&&
                     ((!PaddKilled)||(PaddRevive))&&(!NextLevelTimer)){
 
                     unsigned i = 0;
@@ -543,14 +544,14 @@ void Singleton::GameLoop(){
                             i++;
                         if ((i>=0)&&(i<balls.count())){
                             if ((balls[i].x > 8) && (balls[i].x < 632))
-                                padd.move(MouseX, 0);
+                                padd.move(PadX, 0);
                         }
                         else
-                            padd.move(MouseX, 0);
+                            padd.move(PadX, 0);
 
                         for (unsigned int i=0;i < balls.count(); i++){
                             if (!balls[i].moving)
-                                balls[i].x += MouseX;
+                                balls[i].x += PadX;
                         }   
                     }
                 }
@@ -718,8 +719,8 @@ void Singleton::GameLoop(){
                                 float kprc=((3.14f/8.0f)*2.0f)/100.0f;
                                 float iprc=((padd.length+1)*16-8)/100.0f;
                                 balls[i].angle=(3.14f/2.0f)-((balls[i].x-padd.x)/iprc)*kprc;
-                                if ((balls[i].x+MouseX>8)&&(balls[i].x+MouseX<632))
-                                    balls[i].x+=MouseX;
+                                if ((balls[i].x + PadX > 8) && (balls[i].x + PadX < 632))
+                                    balls[i].x += PadX;
                             }
 
 
