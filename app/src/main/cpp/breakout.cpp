@@ -8,6 +8,8 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
+#include "CppSingleton.h"
+
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
 
@@ -37,6 +39,7 @@ struct engine {
     int32_t width;
     int32_t height;
     struct saved_state state;
+    Singleton* game;
 };
 
 /**
@@ -104,6 +107,10 @@ static int engine_init_display(struct engine* engine) {
     glShadeModel(GL_SMOOTH);
     glDisable(GL_DEPTH_TEST);
 
+    engine->game = new Singleton();
+    if (engine->game)
+        engine->game->init();
+
     return 0;
 }
 
@@ -116,10 +123,12 @@ static void engine_draw_frame(struct engine* engine) {
         return;
     }
 
-    // Just fill the screen with a color.
-    glClearColor(((float)engine->state.x)/engine->width, engine->state.angle,
-                 ((float)engine->state.y)/engine->height, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    if (engine->game) {
+        engine->game->logic();
+        engine->game->render();
+    }
+
+    glFlush();
 
     eglSwapBuffers(engine->display, engine->surface);
 }
@@ -137,6 +146,9 @@ static void engine_term_display(struct engine* engine) {
             eglDestroySurface(engine->display, engine->surface);
         }
         eglTerminate(engine->display);
+
+        if (engine->game)
+            engine->game->destroy();
     }
     engine->animating = 0;
     engine->display = EGL_NO_DISPLAY;
@@ -259,9 +271,9 @@ void android_main(struct android_app* state) {
                     ASensorEvent event;
                     while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
                                                        &event, 1) > 0) {
-                        LOGI("accelerometer: x=%f y=%f z=%f",
-                             event.acceleration.x, event.acceleration.y,
-                             event.acceleration.z);
+                        //LOGI("accelerometer: x=%f y=%f z=%f",
+                        //     event.acceleration.x, event.acceleration.y,
+                        //     event.acceleration.z);
                     }
                 }
             }

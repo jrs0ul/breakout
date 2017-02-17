@@ -20,6 +20,8 @@
 #include "SysConfig.h"
 #include <cwchar>
 #include <cstdio>
+
+#ifndef __ANDROID__
 #include "Xml.h"
 
 
@@ -137,4 +139,4 @@
         conf.destroy();
         return true;
     }
-
+#endif

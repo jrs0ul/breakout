@@ -10,7 +10,7 @@
 
 //--------------------------------------
 void Singleton::loadConfig(){
-
+#ifndef __ANDROID__
     char buf[255];
     sprintf(buf, "%s/settings.cfg", DocumentPath);
     sys.load(buf);
@@ -19,6 +19,7 @@ void Singleton::loadConfig(){
     windowed = sys.useWindowed;
 
     sys.write(buf);
+#endif
 
 }
 //----------------------------------------
@@ -38,7 +39,7 @@ void Singleton::init(){
     music.playback();
 #endif
 
-    pics.load("pics/list.txt"); 
+    pics.load("pics/list.txt");
    
     useAccel = false;
 
@@ -50,12 +51,12 @@ void Singleton::init(){
     Map.create(40,30);
     Map.generate();
 
-
+/*
     Scores.load("scores.dat",10);
     
     //NameBox.init(250,150,"Enter your name:",10);
 
-
+*/
     Ball newball;
     newball.setxy(20*16,30*16-24);
     newball.setangle(0);

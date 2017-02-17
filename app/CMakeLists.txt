@@ -29,13 +29,17 @@ add_library( # Sets the name of the library.
              src/main/cpp/Ball.cpp
              src/main/cpp/Vectors.cpp
              src/main/cpp/BBullets.cpp
-             src/main/cpp/Xml.cpp
              src/main/cpp/Particles2D.cpp
              src/main/cpp/Utils.cpp
              src/main/cpp/SysConfig.cpp
              src/main/cpp/map.cpp
              src/main/cpp/Matrix.cpp
              src/main/cpp/Padd.cpp
+             src/main/cpp/Usefull.cpp
+             src/main/cpp/Image.cpp
+             src/main/cpp/HighScore.cpp
+             src/main/cpp/gui/Text.cpp
+             src/main/cpp/gui/OnScreenBoard.cpp
              )
 
 # Searches for a specified prebuilt library and stores the path as a

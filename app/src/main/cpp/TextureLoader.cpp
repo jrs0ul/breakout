@@ -12,7 +12,10 @@
 #include "TextureLoader.h"
 #include "Vectors.h"
 
-
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
+#endif
 
 
 GLuint PicsContainer::getname(unsigned long index){
@@ -40,7 +43,12 @@ bool PicsContainer::load(const char *list){
 
         unsigned short imageBits = 0;
         if (!naujas.loadTga(PicInfo[i].name,imageBits))
+#ifdef __ANDROID__
+            LOGI("%s not found or corrupted by M$\n",PicInfo[i].name);
+#else
             printf("%s not found or corrupted by M$\n",PicInfo[i].name);
+#endif
+
         PicInfo[i].width = naujas.width;
         PicInfo[i].height = naujas.height;
 

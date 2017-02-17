@@ -50,10 +50,10 @@
 
         }
 
-
+#ifndef __ANDROID__
         bool load(const char * config);
         bool write(const char * config);
-
+#endif
     };
 
 
