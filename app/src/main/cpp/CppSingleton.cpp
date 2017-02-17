@@ -28,15 +28,15 @@ void Singleton::init(){
     glEnable(GL_TEXTURE_2D);
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    
-    
-    
+
+
+#ifndef __ANDROID__
     ss.init(0);
     ss.loadFiles("sfx/", "list.txt");
     music.open("music/music.ogg");
     music.setVolume(sys.musicVolume);
     music.playback();
+#endif
 
     pics.load("pics/list.txt"); 
    
@@ -67,15 +67,10 @@ void Singleton::init(){
     padd.setxy(20*16,30*16-8);
 
 
-            GenerateTexture(64,64);
-            GeneratingTexture=false;
+    GenerateTexture(64,64);
+    GeneratingTexture=false;
 
 
-   
-
-
-
-    
 }
 //-----------------------
 
@@ -195,7 +190,7 @@ void Singleton::render(){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || __ANDROID__
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         glRotatef(-90, 0, 0, 1);
         glOrthof(0.0, (GLfloat) SCREEN_WIDTH, (GLfloat) SCREEN_HEIGHT, 0.0, 400, -400);
@@ -212,22 +207,22 @@ void Singleton::render(){
 }
 //---------------------
 void Singleton::logic(){
-    
+#ifndef __ANDROID__
     if (music.playing())
         music.update();
+#endif
     
     if (touches.down.count()){
-        PadX = touches.down[0].v[0] - PadX;
+        PadX = touches.down[0].v[0] - padd.x;
     }
     if (touches.move.count()){
-        PadX = touches.move[0].v[0] - PadX;
+        PadX = touches.move[0].v[0] - padd.x;
     }
     if (touches.up.count()){
         PadX = 0;
     }
    
     GameLoop();
-    
     
     touches.oldDown.destroy();
     for (unsigned long i = 0; i < touches.down.count(); i++ ){
@@ -255,14 +250,13 @@ void Singleton::destroy(){
     Bullets.destroy();
 
 
-
+#ifndef __ANDROID__
     music.release();
     ss.freeData();
     ss.exit();
+#endif
     pics.destroy();
 }
-
-
 
 //==================================================
 //TODO: fix time(0) 
@@ -318,7 +312,9 @@ void Singleton::EliminateBrick(int tx, int ty,float speed){
             CreatePrize(tx,ty);
         Score+=5*round(speed/DEFAULT_SPEED);
         if (brickid<5){
+#ifndef __ANDROID__
             ss.playsound(2);
+#endif
             
             Particle2DSystem ps;
 
@@ -352,7 +348,9 @@ void Singleton::TakeNewLife(){
 //---------------------
 void Singleton::KillPadd(){
     PaddKilled=true;
+#ifndef __ANDROID__
     ss.playsound(1);
+#endif
     Particle2DSystem ps;
 
 
@@ -394,9 +392,11 @@ void Singleton::ResetGame(){
         if (Score>Scores.getScore(9).score)
             NameBox.activate();
         TitleScreen = true;
+#ifndef __ANDROID__
         music.stop();
         music.open("music/music.ogg");
         music.playback();
+#endif
         
 }
 //---------------------------------
@@ -501,9 +501,11 @@ void Singleton::GameLoop(){
 
         if ((OldKeys[4])&&(!Keys[4])&&(!NameBox.active())){
             TitleScreen=false;
+#ifndef __ANDROID__
             music.stop();
             music.open("music/musicingame.ogg");
             music.playback();
+#endif
             bgpushy=0;
             bgpushx=0;
         }
@@ -610,7 +612,9 @@ void Singleton::GameLoop(){
                     if ((padd.canShoot)&&(!PaddKilled)){
 
                         if (padd.reloadtic==0){
+#ifndef __ANDROID__
                             ss.playsound(3);
+#endif
                             
                             Bullets.add(padd.x+padd.length*16+12,padd.y-20);
                             Bullets.add(padd.x-padd.length*16-12,padd.y-20);
@@ -650,8 +654,9 @@ void Singleton::GameLoop(){
                         if (!balls[i].colidepadd(balls[i].speed,0,padd.x,padd.y,padd.length)){
                             ColidedBrick kalad[3];
                             if (balls[i].move(balls[i].speed, 0, &Map, kalad, ReflectBricks)){
+#ifndef __ANDROID__
                                 ss.playsound(5);
-
+#endif
                             }
 
 
@@ -715,7 +720,9 @@ void Singleton::GameLoop(){
                                     balls[i].moving=false;
                             }
                             else{
+#ifndef __ANDROID__
                                 ss.playsound(0);
+#endif
                                 float kprc=((3.14f/8.0f)*2.0f)/100.0f;
                                 float iprc=((padd.length+1)*16-8)/100.0f;
                                 balls[i].angle=(3.14f/2.0f)-((balls[i].x-padd.x)/iprc)*kprc;
@@ -766,7 +773,9 @@ void Singleton::GameLoop(){
 
                     if ((round(Prizai[i].pos.x())+16>padd.x-padd.length*16-16)&&(round(Prizai[i].pos.x())-16<padd.x+padd.length*16+16)){
                         if ((padd.y-8<round(Prizai[i].pos.y())+16)){
+#ifndef __ANDROID__
                             ss.playsound(4);
+#endif
                             switch(Prizai[i].type){
                     case 0: padd.length++; break; //padd ++
                     case 1:

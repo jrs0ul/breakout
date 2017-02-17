@@ -2,8 +2,10 @@
 #define _CPP_SINGLETON
 
 #include <ctime>
+#ifndef __ANDROID__
 #include "audio/SoundSystem.h"
 #include "audio/OggStream.h"
+#endif
 #include "TextureLoader.h"
 #include "Vectors.h"
 #include "TouchData.h"
@@ -57,9 +59,11 @@ public:
     unsigned char Keys[20];
     unsigned char OldKeys[20];
     Vector3D gamepad;
-    
+
+#ifndef __ANDROID__
     SoundSystem ss;
     OggStream music;
+#endif
     
     PicsContainer pics;
     

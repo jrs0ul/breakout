@@ -12,7 +12,9 @@
 #ifdef WIN32
     #include <windows.h>
 #else
+#ifndef __ANDROID__
     #include <iconv.h>
+#endif
     #include <dirent.h>
     #include <sys/stat.h>
     #include <sys/types.h>
