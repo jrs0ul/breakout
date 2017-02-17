@@ -202,9 +202,11 @@ void Singleton::render(){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || __ANDROID__
+    #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         glRotatef(-90, 0, 0, 1);
+        glOrthof(0.0, (GLfloat) SCREEN_WIDTH, (GLfloat) SCREEN_HEIGHT, 0.0, 400, -400);
+    #elif __ANDROID__
         glOrthof(0.0, (GLfloat) SCREEN_WIDTH, (GLfloat) SCREEN_HEIGHT, 0.0, 400, -400);
     #else
         glOrtho(0.0, (GLfloat) SCREEN_WIDTH, (GLfloat) SCREEN_HEIGHT, 0.0, 400, -400);
@@ -511,7 +513,12 @@ void Singleton::GameLoop(){
             }
         }
 
-        if ((OldKeys[4])&&(!Keys[4])&&(!NameBox.active())){
+
+            
+        //start game
+        if ((((OldKeys[4])&&(!Keys[4]))
+                ||((!touches.down.count())&&(touches.oldDown.count())))
+                &&(!NameBox.active())){
             TitleScreen=false;
 #ifndef __ANDROID__
             music.stop();
@@ -620,7 +627,7 @@ void Singleton::GameLoop(){
 
 
                 //--------------
-                if ((Keys[4])&&(!NextLevelTimer)){ //space to launch ball
+                if (((Keys[4])||touches.up.count())&&(!NextLevelTimer)){ //space to launch ball
                     if ((padd.canShoot)&&(!PaddKilled)){
 
                         if (padd.reloadtic==0){

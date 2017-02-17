@@ -151,28 +151,43 @@ static void engine_term_display(struct engine* engine) {
             delete engine->game;
         }
     }
-    engine->animating = 0;
     engine->display = EGL_NO_DISPLAY;
     engine->context = EGL_NO_CONTEXT;
     engine->surface = EGL_NO_SURFACE;
 }
-
+//-------------------------------------
 /**
  * Process the next input event.
  */
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
     struct engine* engine = (struct engine*)app->userData;
-    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+
+    int32_t inputType = AInputEvent_getType(event);
+    int32_t act = AMotionEvent_getAction(event);
+    if (inputType == AINPUT_EVENT_TYPE_MOTION) {
+        switch(act) {
+            case AMOTION_EVENT_ACTION_UP: {
+                Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0), 0);
+                engine->game->touches.up.add(v);
+            }break;
+            case AMOTION_EVENT_ACTION_DOWN :{
+                    Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0),
+                                          0);
+                    engine->game->touches.down.add(v);
+            }break;
+            case AMOTION_EVENT_ACTION_MOVE: {
+                    Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0),
+                                          0);
+                    engine->game->touches.move.add(v);
+            }
+        }
         engine->animating = 1;
-        engine->state.x = AMotionEvent_getX(event, 0);
-        engine->state.y = AMotionEvent_getY(event, 0);
-        Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0), 0);
-        engine->game->touches.down.add(v);
         return 1;
     }
+
     return 0;
 }
-
+//----------------------------------
 /**
  * Process the next main command.
  */
