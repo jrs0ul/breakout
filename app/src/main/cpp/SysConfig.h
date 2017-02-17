@@ -42,8 +42,8 @@
             ScreenWidth = 640;
             ScreenHeight = 480;
 #else
-            ScreenWidth = 320;
-            ScreenHeight = 240;
+            ScreenWidth = 1280;
+            ScreenHeight = 720;
 
             useWindowed = true;
 #endif

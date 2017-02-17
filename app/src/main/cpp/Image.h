@@ -8,6 +8,9 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#ifdef __ANDROID__
+#include <android/asset_manager.h>
+#endif
 
 /*struct TgaHeader{
     unsigned char fieldDescSize;
@@ -33,7 +36,14 @@ public:
     unsigned char* data;
     unsigned short bits;
     Image(){ data=0; width=0; height=0;}
-    bool loadTga(const char* name, unsigned short& imageBits );
+
+#ifndef __ANDROID__
+    bool loadTga(const char *name, unsigned short& _imageBits );
+#else
+    bool loadTga(const char *name, unsigned short& _imageBits, AAssetManager* man);
+#endif
+
+
     bool saveTga(const char* name);
     void destroy();
 };

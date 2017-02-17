@@ -39,8 +39,19 @@ void Singleton::init(){
     music.playback();
 #endif
 
+#ifndef __ANDROID__
     pics.load("pics/list.txt");
-   
+#else
+    pics.loadFile("pics/chars.tga",   0, 16, 16, 0, AssetManager);
+    pics.loadFile("pics/padd.tga",    1, 16, 16, 0, AssetManager);
+    pics.loadFile("pics/ball.tga",    2, 16, 16, 0, AssetManager);
+    pics.loadFile("pics/bricks.tga",  3, 16, 16, 0, AssetManager);
+    pics.loadFile("pics/prize.tga",   4, 32, 32, 1, AssetManager);
+    pics.loadFile("pics/digits.tga",  5, 16, 32, 0, AssetManager);
+    pics.loadFile("pics/kakutis.tga", 6, 8,  8,  0, AssetManager);
+    pics.loadFile("pics/title.tga",   7, 256,128,0, AssetManager);
+#endif
+
     useAccel = false;
 
     srand((unsigned int)time(0));
@@ -153,9 +164,9 @@ void Singleton::GenerateTexture(unsigned width, unsigned height){
 
       for (unsigned i = 0; i < width; i++){
           //first
-          pic.data[(a+1)*width*3+i*3] = pic.data[a*width*3+i*3] + 20;
-          pic.data[(a+1)*width*3+i*3+1] = pic.data[a*width*3+i*3+1] + 20;
-          pic.data[(a+1)*width*3+i*3+2] = pic.data[a*width*3+i*3+2] + 20;
+          pic.data[(a+1)*width*3+i*3] =   (unsigned char)(pic.data[a*width*3+i*3] + 20);
+          pic.data[(a+1)*width*3+i*3+1] = (unsigned char)(pic.data[a*width*3+i*3+1] + 20);
+          pic.data[(a+1)*width*3+i*3+2] = (unsigned char)(pic.data[a*width*3+i*3+2] + 20);
           //second
           pic.data[(a+2)*width*3+i*3] = pic.data[a*width*3 + i*3] + 30;
           pic.data[(a+2)*width*3+i*3+1] = pic.data[a*width*3 + i*3+1] + 30;

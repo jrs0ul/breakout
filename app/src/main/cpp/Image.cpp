@@ -9,24 +9,50 @@
 #include <cstdlib>
 #include <cstring>
 #include "Image.h"
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
+#endif
 
-
+#ifndef __ANDROID__
 bool Image::loadTga(const char *name, unsigned short& _imageBits ){
+#else
+bool Image::loadTga(const char *name, unsigned short& _imageBits, AAssetManager* man){
+#endif
+
+#ifndef __ANDROID__
     FILE* TGAfile;
     TGAfile = fopen(name,"rb");
     if (!TGAfile)
         return false;
+#else
+    LOGI("Opening asset: %s", name);
+    AAsset * file = 0;
+    file = AAssetManager_open(man, name, AASSET_MODE_UNKNOWN );
+    if(!file)
+        return false;
+
+#endif
 
     int result = 0;
    
     //TgaHeader th;
     unsigned char header[18];
+#ifndef __ANDROID__
     result = fread(header, 18, 1, TGAfile);
-
     if ((header[2] != 2)&&(header[2] != 10)){
         fclose(TGAfile);
         return false;
     }
+#else
+    result = AAsset_read(file, header, 18);
+    if ((header[2] != 2)&&(header[2] != 10)){
+        AAsset_close(file);
+        return false;
+    }
+    
+#endif
+
     memcpy(&width, &header[12], 2);
     memcpy(&height, &header[14], 2);
     unsigned short mapLength;
@@ -38,18 +64,33 @@ bool Image::loadTga(const char *name, unsigned short& _imageBits ){
     _imageBits = (unsigned short)header[16];
    
     if (imageBits < 24){
+
+#ifndef __ANDROID__
         fclose(TGAfile);
+#else
+        AAsset_close(file);
+#endif
         return false;
     }
+#ifndef __ANDROID__
     fseek(TGAfile, header[0], SEEK_CUR);
-    fseek(TGAfile, mapLength * (imageBits/8),SEEK_CUR);
-
+    fseek(TGAfile, mapLength * (imageBits/8), SEEK_CUR);
+#else
+    AAsset_seek(file, header[0], SEEK_CUR);
+    AAsset_seek(file, mapLength * (imageBits/8), SEEK_CUR);
+#endif
     data = (unsigned char *)malloc(width*height*(imageBits/8));
 
     if (header[2] == 2){ //uncompressed TGA
         unsigned char* tmp_data = (unsigned char*)malloc(width*height*(imageBits/8));
+
+#ifndef __ANDROID__
         result = fread(tmp_data, sizeof(unsigned char),
                        width * height * (imageBits/8), TGAfile);
+#else
+        result = AAsset_read(file, tmp_data, width*height*imageBits/8);
+
+#endif
 
         for (int i = 0; i<height*width*(imageBits/8); i+=(imageBits/8)){
 
@@ -71,7 +112,11 @@ bool Image::loadTga(const char *name, unsigned short& _imageBits ){
         unsigned char p[5];
 
          while (n < width * height) {
+#ifndef __ANDROID__
             result = fread(p,1,imageBits/8+1,TGAfile);
+#else
+            result = AAsset_read(file, p, imageBits/8+1);
+#endif
             j = p[0] & 0x7f;
 
             data [n*(imageBits/8)] = p[3]; //R
@@ -94,7 +139,11 @@ bool Image::loadTga(const char *name, unsigned short& _imageBits ){
             }
             else{
                 for (int i=0;i<j;i++) {
+#ifndef __ANDROID__
                     result = fread(p,1,imageBits/8,TGAfile);
+#else
+                    result = AAsset_read(file, p, imageBits/8);
+#endif
 
                     data [n*(imageBits/8)] = p[2]; //R
                     data [n*(imageBits/8)+1] = p[1]; //G
@@ -106,7 +155,11 @@ bool Image::loadTga(const char *name, unsigned short& _imageBits ){
             }
          }
     }
+#ifndef __ANDROID__
     fclose(TGAfile);
+#else
+    AAsset_close(file);
+#endif
     return true;
 }
 

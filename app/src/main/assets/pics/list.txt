@@ -1,0 +1,16 @@
+pics/chars.tga
+16 16 
+pics/padd.tga
+16 16 
+pics/ball.tga
+16 16 
+pics/bricks.tga
+16 16 
+pics/prize.tga
+32 32 
+pics/digits.tga
+32 16 
+pics/kakutis.tga
+8 8 
+pics/title.tga
+128 256

@@ -103,11 +103,10 @@ static int engine_init_display(struct engine* engine) {
 
     // Initialize GL state.
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-    glEnable(GL_CULL_FACE);
-    glShadeModel(GL_SMOOTH);
+    //glEnable(GL_CULL_FACE);
+    //glShadeModel(GL_SMOOTH);
     glDisable(GL_DEPTH_TEST);
 
-    engine->game = new Singleton();
     if (engine->game)
         engine->game->init();
 
@@ -147,8 +146,10 @@ static void engine_term_display(struct engine* engine) {
         }
         eglTerminate(engine->display);
 
-        if (engine->game)
+        if (engine->game) {
             engine->game->destroy();
+            delete engine->game;
+        }
     }
     engine->animating = 0;
     engine->display = EGL_NO_DISPLAY;
@@ -165,6 +166,8 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
         engine->animating = 1;
         engine->state.x = AMotionEvent_getX(event, 0);
         engine->state.y = AMotionEvent_getY(event, 0);
+        Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0), 0);
+        engine->game->touches.down.add(v);
         return 1;
     }
     return 0;
@@ -185,8 +188,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
             if (engine->app->window != NULL) {
+                engine->game = new Singleton();
+                engine->game->AssetManager = app->activity->assetManager;
                 engine_init_display(engine);
                 engine_draw_frame(engine);
+
             }
             break;
         case APP_CMD_TERM_WINDOW:
@@ -196,19 +202,19 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS:
             // When our app gains focus, we start monitoring the accelerometer.
             if (engine->accelerometerSensor != NULL) {
-                ASensorEventQueue_enableSensor(engine->sensorEventQueue,
-                                               engine->accelerometerSensor);
+               // ASensorEventQueue_enableSensor(engine->sensorEventQueue,
+                //                               engine->accelerometerSensor);
                 // We'd like to get 60 events per second (in us).
-                ASensorEventQueue_setEventRate(engine->sensorEventQueue,
-                                               engine->accelerometerSensor, (1000L/60)*1000);
+                //ASensorEventQueue_setEventRate(engine->sensorEventQueue,
+                 //                              engine->accelerometerSensor, (1000L/60)*1000);
             }
             break;
         case APP_CMD_LOST_FOCUS:
             // When our app loses focus, we stop monitoring the accelerometer.
             // This is to avoid consuming battery while not being used.
             if (engine->accelerometerSensor != NULL) {
-                ASensorEventQueue_disableSensor(engine->sensorEventQueue,
-                                                engine->accelerometerSensor);
+               // ASensorEventQueue_disableSensor(engine->sensorEventQueue,
+                //                                engine->accelerometerSensor);
             }
             // Also stop animating.
             engine->animating = 0;
@@ -247,6 +253,10 @@ void android_main(struct android_app* state) {
     }
 
     // loop waiting for stuff to do.
+    
+
+
+
 
     while (1) {
         // Read all pending events.
@@ -267,15 +277,15 @@ void android_main(struct android_app* state) {
 
             // If a sensor has data, process it now.
             if (ident == LOOPER_ID_USER) {
-                if (engine.accelerometerSensor != NULL) {
-                    ASensorEvent event;
-                    while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
-                                                       &event, 1) > 0) {
+                //if (engine.accelerometerSensor != NULL) {
+                 //   ASensorEvent event;
+                //    while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
+                //                                       &event, 1) > 0) {
                         //LOGI("accelerometer: x=%f y=%f z=%f",
                         //     event.acceleration.x, event.acceleration.y,
                         //     event.acceleration.z);
-                    }
-                }
+                   // }
+               // }
             }
 
             // Check if we are exiting.
@@ -287,10 +297,10 @@ void android_main(struct android_app* state) {
 
         if (engine.animating) {
             // Done with events; draw next animation frame.
-            engine.state.angle += .01f;
+           /* engine.state.angle += .01f;
             if (engine.state.angle > 1) {
                 engine.state.angle = 0;
-            }
+            }*/
 
             // Drawing is throttled to the screen update rate, so there
             // is no need to do timing here.

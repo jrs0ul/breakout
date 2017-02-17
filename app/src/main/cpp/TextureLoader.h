@@ -131,15 +131,18 @@ public:
                      const char * name,
                      unsigned long index,
                      int twidth, int theight, int filter=0);
-
+#ifndef __ANDROID__
     bool loadFile(const char* file, unsigned long index,
-                  int twidth, int theight,
-                  const char * basePath, int filter = 0); //???
+                             int twidth, int theight, int filter);
+#else
+    bool loadFile(const char* file, unsigned long index,
+                                 int twidth, int theight, int filter,
+                                 AAssetManager* man);
+#endif
+
+   
     //loads images using special array loaded from file
     bool loadFile(unsigned long index, const char * BasePath);
-    //no need for base folder
-    bool loadFile(const char* file, unsigned long index,
-                  int twidth, int theight, int filter = 0);
     //attach already created texture
     void attachTexture(GLuint textureID, unsigned long index,
                        int width, int height,

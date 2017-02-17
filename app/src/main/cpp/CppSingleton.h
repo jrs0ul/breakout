@@ -47,6 +47,9 @@ class Singleton{
 
 public:
   
+#ifdef __ANDROID__
+    AAssetManager* AssetManager;
+#endif
 
     DArray<Prizas> Prizai;
 

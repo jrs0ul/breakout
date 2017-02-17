@@ -18,6 +18,8 @@
 #endif
 
 
+
+
 GLuint PicsContainer::getname(unsigned long index){
     if (index < TexNames.count())
         return TexNames[index];
@@ -42,10 +44,12 @@ bool PicsContainer::load(const char *list){
         Image naujas;
 
         unsigned short imageBits = 0;
-        if (!naujas.loadTga(PicInfo[i].name,imageBits))
+
 #ifdef __ANDROID__
+        if (!naujas.loadTga(PicInfo[i].name, imageBits, 0))
             LOGI("%s not found or corrupted by M$\n",PicInfo[i].name);
 #else
+        if (!naujas.loadTga(PicInfo[i].name,imageBits))
             printf("%s not found or corrupted by M$\n",PicInfo[i].name);
 #endif
 
@@ -497,19 +501,31 @@ void PicsContainer::resizeContainer(unsigned long index,
 
 }
 
-
 //-----------------------------------------------------
+#ifndef __ANDROID__
 bool PicsContainer::loadFile(const char* file, unsigned long index,
                              int twidth, int theight, int filter){
-
+#else
+bool PicsContainer::loadFile(const char* file, unsigned long index,
+                             int twidth, int theight, int filter, AAssetManager* man){
+#endif
 
         Image naujas;
 
         unsigned short imageBits=0;
 
 
+
+
+
+#ifdef __ANDROID__
+        if (!naujas.loadTga(file, imageBits, man)){
+            LOGI("%s not found or corrupted by M$\n", file);
+#else
+
         if (!naujas.loadTga(file, imageBits)){
             printf("%s not found or corrupted by M$\n", file);
+#endif
             return false;
         }
 
@@ -591,28 +607,6 @@ void PicsContainer::makeTexture(Image& img,
 
 }
 
-//-----------------------------------------------------
-bool PicsContainer::loadFile(const char* file, unsigned long index,
-                             int twidth, int theight,
-                             const char* basePath, int filter){
-
-    
-
-    char buf[255];
-    sprintf(buf, "%s%s", basePath, file);
-
-    if (!loadFile(buf, index, twidth, theight, filter)){
-        sprintf(buf, "base/pics/%s", file);
-        puts("Let's try base/");
-
-        if (!loadFile(buf, index, twidth,  theight, filter))
-            return false;
-
-    }
-
-    return true;
-
-}
 //--------------------------------------------------
 bool PicsContainer::loadFile(unsigned long index,
                              const char * BasePath){
@@ -628,10 +622,19 @@ bool PicsContainer::loadFile(unsigned long index,
     sprintf(dir, "%spics/", BasePath);
     sprintf(buf, "%s%s", dir, PicInfo[index].name);
 
+#ifndef __ANDROID__
     if (!naujas.loadTga(buf, imageBits)){
+#else
+    if (!naujas.loadTga(buf, imageBits, 0)){
+#endif
+
         sprintf(buf, "base/pics/%s", PicInfo[index].name);
         puts("Let's try base/");
+#ifndef __ANDROID__
         if (!naujas.loadTga(buf, imageBits)){
+#else
+        if (!naujas.loadTga(buf, imageBits, 0)){
+#endif
             printf("%s not found or corrupted by M$\n", buf);
             return false;
         }
@@ -724,6 +727,8 @@ int PicsContainer::findByName(const char* picname, bool debug){
 }
 //---------------------------------------
 bool PicsContainer::initContainer(const char *list){
+
+
     FILE* failas=fopen(list,"rt");
 
     int result = 0;
