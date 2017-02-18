@@ -32,6 +32,7 @@ struct Lines{
 };
 
 
+
 //converts wide character string to ascii string with special characters
 //which represent lithuanian letters. Usefull for bitmap font
 void convertLT(const wchar_t* txt, char * buf, int len);
@@ -54,7 +55,6 @@ void GetHomePath(char * _homePath);
 //Multiplatform directory creation
 void    MakeDir(const char * path);
 
-double _round(double x);
 
 void    GetFileList(const char * path, Lines& l);
 void    GetDirectoryList(const char* path, Lines& l);

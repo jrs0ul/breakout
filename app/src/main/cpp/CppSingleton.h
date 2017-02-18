@@ -13,7 +13,7 @@
 #include "SysConfig.h"
 #include "Utils.h"
 #include "Particles2D.h"
-#include "Padd.h"
+#include "Padle.h"
 #include "Ball.h"
 #include "HighScore.h"
 #include "BBullets.h"
@@ -24,6 +24,9 @@
 #define SCREEN_HEIGHT 480
 
 
+enum GameStates{TITLE, GAME};
+enum PrizeTypes{GROW, SHRINK, MAGNET, NOCLIP,
+                MULTIPLY, SLOWDOWN, GUNS, DEATH};
 
 
 #ifndef __IPHONEOS__
@@ -36,8 +39,6 @@ struct Prizas{
     int type;
 };
 
-const float DEFAULT_SPEED=3.5f;
-const float MAX_SPEED=8.0f;
 
 
 //============================================
@@ -49,12 +50,15 @@ class Singleton{
     void updateParticleSystems();
     void drawWallpaper();
     void scrollWallpaper();
+    void onTitleScreen();
 
 public:
   
 #ifdef __ANDROID__
     AAssetManager* AssetManager;
 #endif
+
+    GameStates gameState;
 
     DArray<Prizas> Prizai;
 
@@ -107,10 +111,9 @@ public:
 
 
     long tick;
-    bool TitleScreen;
     BreakOutMap Map;
     DArray<Ball> balls;
-    Padd padd;
+    Padle padle;
 
     bool fall;
 
@@ -126,9 +129,9 @@ public:
     int bgpushx;
     int scrooltim;
 
-    bool PaddKilled;
-    float PaddAlpha;
-    bool PaddRevive;
+    bool  padleKilled;
+    float padleAlpha;
+    bool  padleRevive;
 
     OnScreenKeyboard NameBox;
 
@@ -159,15 +162,15 @@ public:
 
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-                ScreenWidth = 640;
-                ScreenHeight = 480;
+        ScreenWidth = 640;
+        ScreenHeight = 480;
 #else
-                ScreenWidth = 640;
-                ScreenHeight = 480;
-                windowed = false;
+        ScreenWidth = 640;
+        ScreenHeight = 480;
+        windowed = false;
 #endif
 
-                clickCount = 0; 
+        clickCount = 0; 
                     
                     
         
@@ -175,30 +178,29 @@ public:
                     
                 
                     
-                oldMoveTouch = Vector3D(-1,-1,0);
+        oldMoveTouch = Vector3D(-1,-1,0);
 
-                Works = true;
+        Works = true;
 
-                tick = 0;
-                TitleScreen = true;
-                fall = false;
-                lives = 3;
-                Score = 0;
-                ShowDebugText = false;
-                GeneratingTexture = false;
-                GamePaused = false;
-                bgpushy = 0;
-                bgpushx = 0;
-                scrooltim = 0;
-                PaddKilled = false;
-                PaddAlpha = 1.0f;
-                PaddRevive = false;
-                ReflectBricks = true;
-                NextLevelTimer = 0;
+        tick = 0;
+        fall = false;
+        lives = 3;
+        Score = 0;
+        ShowDebugText = false;
+        GeneratingTexture = false;
+        GamePaused = false;
+        bgpushy = 0;
+        bgpushx = 0;
+        scrooltim = 0;
+        padleKilled = false;
+        padleAlpha = 1.0f;
+        padleRevive = false;
+        ReflectBricks = true;
+        NextLevelTimer = 0;
 
-                PadX = 0;
+        PadX = 0;
                 
-               }
+    }
     
     void init();
     void loadConfig();

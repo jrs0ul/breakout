@@ -1,5 +1,6 @@
 
 #include "CppSingleton.h"
+#include "Usefull.h"
 #include <ctime>
 
 
@@ -76,12 +77,12 @@ void Singleton::init(){
     Ball newball;
     newball.setxy(20*16,30*16-24);
     newball.setangle(0);
-    newball.moving=false;
+    newball.deactivate();
     balls.add(newball);
 
-    padd.length=1;
+    padle.length = 1;
 
-    padd.setxy(20*16,30*16-8);
+    padle.setxy(20 * 16, 30 * 16 - 8);
 
 
     GenerateTexture(64,64);
@@ -204,10 +205,10 @@ void Singleton::logic(){
 #endif
     
     if (touches.down.count()){
-        PadX = touches.down[0].v[0] - padd.x;
+        PadX = touches.down[0].v[0] - padle.x;
     }
     if (touches.move.count()){
-        PadX = touches.move[0].v[0] - padd.x;
+        PadX = touches.move[0].v[0] - padle.x;
     }
     if (touches.up.count()){
         PadX = 0;
@@ -271,85 +272,87 @@ void Singleton::CreatePrize(float x, float y){
                      2.5, 0);
 
     newprize.type=rand()%8;
-    if ((padd.length==1)&&(newprize.type==1))
-        newprize.type=0;
-    if ((padd.length>5)&&(newprize.type==0))
-        newprize.type=1;
-    if ((padd.isMagnet)&&(newprize.type==2))
-        newprize.type=4;
-    if ((padd.canShoot)&&(newprize.type==6))
-        newprize.type=7;
-    if ((!ReflectBricks)&&(newprize.type==3))
-        newprize.type=7;
+
+    if ((padle.length == 1) && (newprize.type == 1))
+        newprize.type = 0;
+    if ((padle.length > 5) && (newprize.type == 0))
+        newprize.type = 1;
+    if ((padle.isMagnet) && (newprize.type == 2))
+        newprize.type = 4;
+    if ((padle.canShoot) && (newprize.type == 6))
+        newprize.type = 7;
+    if ((!ReflectBricks) && (newprize.type == 3))
+        newprize.type = 7;
 
     Prizai.add(newprize);
 }
 
 
 //-------------------------
-void Singleton::EliminateBrick(int tx, int ty,float speed){
+void Singleton::EliminateBrick(int tx, int ty, float speed){
 
     int brickid = 0;
     int x,y;
-    if (Map.tiles[ty][tx]%2!=0)
-        x=tx*16+16;
-    else
-        x=tx*16;
-    y=ty*16+8;
 
-    brickid = Map.removetile(tx,ty);
+    if (Map.tiles[ty][tx]%2 != 0)
+        x = tx * 16 + 16;
+    else
+        x = tx * 16;
+
+    y = ty * 16 + 8;
+
+    brickid = Map.removetile(tx, ty);
     if (brickid){
-        if (brickid==3)
+        if (brickid == 3)
             CreatePrize(tx,ty);
-        Score+=5*round(speed/DEFAULT_SPEED);
-        if (brickid<5){
+        Score += 5 * roundDoube2Int(speed / DEFAULT_SPEED);
+        if (brickid < 5){
 #ifndef __ANDROID__
             ss.playsound(2);
 #endif
-            
             Particle2DSystem ps;
-
-
-            ps.setPos(x, y, 0);
-            ps.setDirIntervals(Vector3D(1,1,1) , 20);
-            ps.setParticleLifetime(50);
-            ps.setSystemLifetime(50);
+            ps.setPos(x, 0, y);
+            ps.setDirIntervals(Vector3D(1,1,1) , 360);
+            ps.setParticleLifetime(10);
+            ps.setSystemLifetime(30);
             ps.setColors(COLOR(1,0,0,1),COLOR(1,1,0,0));
+            ps.setSizes(0.5f, 0.2f);
+            ps.revive();
             PSystems.add(ps);
-
         }
-
-
     }
-
 }
 //--------------------------
 void Singleton::TakeNewLife(){
+
     Ball newball;
-    newball.moving=false;
-    newball.angle=0;
-    newball.setxy(padd.x,padd.y-16);
+    newball.deactivate();
+    newball.angle = 0;
+    newball.setxy(padle.x, padle.y - 16);
     balls.add(newball);
-    padd.canShoot=false;
-    padd.isMagnet=false;
-    ReflectBricks=true;
+    padle.canShoot = false;
+    padle.isMagnet = false;
+    ReflectBricks = true;
     lives--;
 
 }
 //---------------------
 void Singleton::KillPadd(){
-    PaddKilled=true;
+    padleKilled = true;
 #ifndef __ANDROID__
     ss.playsound(1);
 #endif
     Particle2DSystem ps;
 
 
-    ps.setPos(padd.x,padd.y-4, 0);
-    ps.setDirIntervals(Vector3D(1,1,0),360);
+    ps.setPos(padle.x, 0, padle.y);
+    ps.setDirIntervals(Vector3D(1,0,1),360);
     ps.setParticleLifetime(50);
     ps.setSystemLifetime(100);
     ps.setColors(COLOR(1,1,1,1),COLOR(1,1,1,0));
+    ps.setSizes(0.5f, 0.5f);
+    ps.revive();
+
     PSystems.add(ps);
 
 }
@@ -362,33 +365,33 @@ void Singleton::ResetGame(){
     //TODO fix it
     //Scores.load("scores.dat",10);
     lives = 3;
-    padd.length=1;
+    padle.length = 1;
     balls.destroy();
     Ball newball;
-    newball.setxy(padd.x,padd.y-16);
+    newball.setxy(padle.x, padle.y-16);
     newball.setangle(0);
-    newball.moving = false;
+    newball.deactivate();
     balls.add(newball);
     Map.destroy();
     Map.brickCount = 0;
     Map.create(40, 30);
-        Map.generate();
-        padd.canShoot=false;
-        padd.isMagnet=false;
-        ReflectBricks=true;
-        //---------
-        GeneratingTexture=true;
-        pics.remove(pics.count()-1);
-        GenerateTexture(64,64);
-        GeneratingTexture=false;
+    Map.generate();
+    padle.canShoot = false;
+    padle.isMagnet = false;
+    ReflectBricks = true;
+    //---------
+    GeneratingTexture=true;
+    pics.remove(pics.count()-1);
+    GenerateTexture(64,64);
+    GeneratingTexture = false;
 
-        if (Score > Scores.getScore(9).score)
-            NameBox.activate();
-        TitleScreen = true;
+    if (Score > Scores.getScore(9).score)
+        NameBox.activate();
+    gameState = TITLE;
 #ifndef __ANDROID__
-        music.stop();
-        music.open("music/music.ogg");
-        music.playback();
+    music.stop();
+    music.open("music/music.ogg");
+    music.playback();
 #endif
         
 }
@@ -398,20 +401,20 @@ void Singleton::GoNextLevel(){
     balls.destroy();
     Ball newball;
     newball.angle = 0;
-    newball.setxy(padd.x, padd.y - 16);
-    newball.moving = false;
+    newball.setxy(padle.x, padle.y - 16);
+    newball.deactivate();
     balls.add(newball);
     GeneratingTexture = true;
     pics.remove(pics.count() - 1);
     GenerateTexture(64, 64);
     GeneratingTexture = false;
     Map.generate();
-    padd.canShoot = false;
-    padd.isMagnet = false;
+    padle.canShoot = false;
+    padle.isMagnet = false;
     ReflectBricks = true;
     Bullets.destroy();
     Prizai.destroy();
-    padd.length = 1;
+    padle.length = 1;
 
 
 }
@@ -429,6 +432,7 @@ void Singleton::bulletLogic(){
         b->y-=4;
         if ((b->y<4)||(Map.tiles[b->y/16][b->x/16])){
             if (Map.tiles[b->y/16][b->x/16])
+                
             EliminateBrick(b->x/16,b->y/16,DEFAULT_SPEED*2.0f);
             Bullets.removeCurrent();
         }
@@ -444,24 +448,24 @@ void Singleton::bulletLogic(){
 //-----------------------------
 void Singleton::onPadDeath(){
 
-    if (!PaddRevive){
-        PaddAlpha -= 0.01f;
-        if ((PaddAlpha<0) && (lives))
-            PaddRevive = true;
-        if ((!lives) && (PaddAlpha < 0)){
-            PaddKilled = false;
+    if (!padleRevive){
+        padleAlpha -= 0.01f;
+        if ((padleAlpha<0) && (lives))
+            padleRevive = true;
+        if ((!lives) && (padleAlpha < 0)){
+            padleKilled = false;
             lives--;
-            PaddAlpha = 1.0f;
+            padleAlpha = 1.0f;
         }
     }
     else{
-        PaddAlpha += 0.01f;
+        padleAlpha += 0.01f;
                     
-        if (PaddAlpha > 1){
+        if (padleAlpha > 1){
             TakeNewLife();
-            PaddKilled = false;
-            PaddRevive = false;
-            PaddAlpha = 1;
+            padleKilled = false;
+            padleRevive = false;
+            padleAlpha = 1;
         }
     }
 }
@@ -471,47 +475,37 @@ void Singleton::onPrizePickup(unsigned i){
     ss.playsound(4);
 #endif
     switch(Prizai[i].type){
-        case 0: padd.length++; break; //padd ++
-        case 1: if (padd.length>1) //padd --
-                    padd.length--;
-                break;
-        case 2: padd.isMagnet = true; break;
-        case 3: ReflectBricks = false; break;
-        case 4:{ //multiply ball
+        case GROW:    padle.length++; break; 
+        case SHRINK:  if (padle.length > 1) padle.length--; break;
+        case MAGNET:  padle.isMagnet = true; break;
+        case NOCLIP:  ReflectBricks = false; break;
+        case MULTIPLY:{ //multiply balls x2
                         if (balls.count()){
                             unsigned cnt=balls.count();
-                            for (unsigned int i=0;i<cnt;i++){
-                                if (!balls[i].moving){
-                                    balls[i].moving=true;
-                                    balls[i].speed=DEFAULT_SPEED;
-                                    balls[i].angle=3.14f/2.0f;
+                            for (unsigned int i=0; i < cnt; i++){
+                                if (!balls[i].isActive()){
+                                    balls[i].launch();
                                 }
                                 Ball newball;
                                 newball.setxy(balls[i].x,balls[i].y);
-                                newball.moving=true;
-                                newball.speed=balls[i].speed;
-                                newball.angle=-balls[i].angle;
+                                newball.launch(balls[i].speed(), -balls[i].angle);
                                 balls.add(newball);
                             }
                         }
                 }break;
 
-        case 5:{ //slow balls :)
+        case SLOWDOWN:{ //slow balls :)
             for (unsigned int i=0; i<balls.count(); i++)
-                            balls[i].speed=DEFAULT_SPEED/2.0f;
+                            balls[i].setSpeed(DEFAULT_SPEED/2.0f);
                 } break;
 
-        case 6:{
-                        padd.canShoot=true;
-                           }break;
-        case 7:{ //death
+        case GUNS: padle.canShoot = true; break;
+        case DEATH:{ //death
                         balls.destroy();
                         KillPadd();
         }break;
     }
     Prizai.remove(i);
-
-
 }
 //-------------------------
 void Singleton::updateParticleSystems(){
@@ -548,16 +542,11 @@ void Singleton::scrollWallpaper(){
         }
 
 }
-
 //-----------------------------
+void Singleton::onTitleScreen(){
 
-void Singleton::GameLoop(){
-
-
-
-    if (TitleScreen){ //vardo ivedimas
-
-        if (NameBox.active()){
+    scrollWallpaper();
+    if (NameBox.active()){
 
 
             float mx = -1;
@@ -607,134 +596,135 @@ void Singleton::GameLoop(){
                 Score=0;
             }
         }
+        else{
 
-
-        scrollWallpaper();
-
-            
         //start game
-        if ((((OldKeys[4])&&(!Keys[4]))
-                ||(touches.up.count()))
-                &&(!NameBox.active())){
-            TitleScreen=false;
+            if ((((OldKeys[4])&&(!Keys[4]))
+                ||(touches.up.count()))){
+            
+                gameState = GAME;
 #ifndef __ANDROID__
-            music.stop();
-            music.open("music/musicingame.ogg");
-            music.playback();
+                music.stop();
+                music.open("music/musicingame.ogg");
+                music.playback();
 #endif
-            bgpushy = 0;
-            bgpushx = 0;
+                bgpushy = 0;
+                bgpushx = 0;
+            }
         }
 
-
-    }
-
-    else{ //GAME------------->
+}
 
 
-        if (!GamePaused){
+//-----------------------------
+
+void Singleton::GameLoop(){
 
 
-                padd.tic++;
-                if (padd.tic>50)
-                    padd.tic=0;
+    switch(gameState){
+        case TITLE:{
+            onTitleScreen();
+        } break;
+        case GAME:{ 
 
+            if (!GamePaused){
+                padle.tic++;
+                if (padle.tic > 50)
+                    padle.tic = 0;
 
                 updateParticleSystems();
 
-                 
-                //--Judinam pada
-                if ((padd.x + padd.length * 16 + 16 + PadX < SCREEN_WIDTH)&&
-                    (padd.x-16-padd.length * 16 + PadX > 0)&&
-                    ((!PaddKilled) || (PaddRevive)) && (!NextLevelTimer)){
+                //move padle
+                if ((padle.x + padle.length * 16 + 16 + PadX < SCREEN_WIDTH)&&
+                    (padle.x-16-padle.length * 16 + PadX > 0)&&
+                    ((!padleKilled) || (padleRevive)) && (!NextLevelTimer)){
 
                     unsigned i = 0;
                     if (balls.count()){
-                        while ((!balls[i].colidepadd(balls[i].speed,0,padd.x,padd.y,padd.length) &&
-                                (i<balls.count())))
+                        while ((!balls[i].colidesWithPadle(padle.x, padle.y, padle.length) &&
+                                (i < balls.count())))
                             i++;
-                        if ((i>=0)&&(i<balls.count())){
-                            if ((balls[i].x > 8) && (balls[i].x < 632))
-                                padd.move(PadX, 0);
+                        if ((i >= 0) && (i < balls.count())){
+                            if ((balls[i].x > 8) && (balls[i].x < SCREEN_WIDTH - 8))
+                                padle.move(PadX, 0);
                         }
                         else
-                            padd.move(PadX, 0);
+                            padle.move(PadX, 0);
 
-                        for (unsigned int i=0;i < balls.count(); i++){
-                            if (!balls[i].moving)
+                        for (unsigned int i=0; i < balls.count(); i++){
+                            if (!balls[i].isActive())
                                 balls[i].x += PadX;
                         }   
                     }
                 }
                 //--------
-                if (PaddKilled)
+                if (padleKilled)
                     onPadDeath();
 
                 bulletLogic();
 
                 //--------------
-                if ((Keys[4] || touches.up.count()) && (!NextLevelTimer)){ //space to launch ball
-                    if ((padd.canShoot)&&(!PaddKilled)){
-
-                        if (padd.reloadtic==0){
-#ifndef __ANDROID__
-                            ss.playsound(3);
-#endif
-                            Bullets.add(padd.x+padd.length*16+12,padd.y-20);
-                            Bullets.add(padd.x-padd.length*16-12,padd.y-20);
-                            padd.reloadtic = 1;
-                        }
-                    }
-                    if (padd.reloadtic >= 1){
-                        padd.reloadtic++;
-                        if (padd.reloadtic > 10)
-                            padd.reloadtic = 0;
-
-                    }
-
+                if ((Keys[4] || touches.up.count()) && (!NextLevelTimer)){ //launches  ball(s)
+                    
                     for (unsigned i = 0; i < balls.count(); i++){
-                        if (!balls[i].moving){
-                            balls[i].moving = true;
-                            balls[i].speed = DEFAULT_SPEED;
-                            balls[i].angle = 3.14f/2.0f;
-
+                        if (!balls[i].isActive()){
+                            balls[i].launch();
                         }
                     }
                 }
 
+                //let's spread some bullets
+                if ((padle.canShoot) && (!padleKilled)){
 
-
-
-                if (!NextLevelTimer){
-                for (unsigned int i = 0; i < balls.count(); i++){
-
-                    if (balls[i].moving){
-
-                        if (balls[i].speed < MAX_SPEED)
-                        balls[i].speed += 0.001f;
-
-                        if (!balls[i].colidepadd(balls[i].speed,0,padd.x,padd.y,padd.length)){
-                            ColidedBrick kalad[3];
-                            if (balls[i].move(balls[i].speed, 0, &Map, kalad, ReflectBricks)){
+                    if (padle.reloadtic == 0){
 #ifndef __ANDROID__
-                                ss.playsound(5);
+                        ss.playsound(3);
 #endif
-                            }
+                        Bullets.add(padle.x + padle.length * 16 + 12, padle.y - 20);
+                        Bullets.add(padle.x - padle.length * 16 - 12, padle.y - 20);
+                        padle.reloadtic = 1;
+                    }
+                }
+                if (padle.reloadtic >= 1){
+                    padle.reloadtic++;
+                    if (padle.reloadtic > 20)
+                        padle.reloadtic = 0;
 
+                }
+                //---
+                if (!NextLevelTimer){
+                    for (unsigned int i = 0; i < balls.count(); i++){
 
-                            //Naikinam kaladeles----
-                            if (kalad[0].colided){
+                        if (balls[i].isActive()){
 
-                                if ((kalad[1].x==kalad[0].x)&&(kalad[1].y==kalad[0].y))
-                                    kalad[1].colided = false;
-                                else{
-                                    if (((kalad[1].x==kalad[0].x+1) && (kalad[1].y==kalad[0].y)
-                                        && (Map.tiles[kalad[0].y][kalad[0].x]%2==0))||
-                                        ((kalad[1].x==kalad[0].x-1)&&(kalad[1].y==kalad[0].y)&&
-                                         (Map.tiles[kalad[0].y][kalad[0].x]%2!=0))){
-                                            kalad[1].colided=false;
-                                    }
+                            balls[i].speedUp();
+                            
+                            //doesn't this ball colide with padle ?    
+                            if (!balls[i].colidesWithPadle(padle.x, padle.y, padle.length)){
+
+                                //Let's check if it colides with tiles
+                                ColidedBrick kalad[3];
+                                //moves and gets collision data
+                                if (balls[i].move(&Map, kalad, ReflectBricks)){
+#ifndef __ANDROID__
+                                    ss.playsound(5);
+#endif
                                 }
+
+                                //let's destroy tiles that were hit by the ball
+                                if (kalad[0].colided){
+
+                                    if ((kalad[1].x==kalad[0].x)&&(kalad[1].y==kalad[0].y))
+                                        kalad[1].colided = false;
+                                    else{
+                                        if (((kalad[1].x==kalad[0].x+1) && (kalad[1].y==kalad[0].y)
+                                            && (Map.tiles[kalad[0].y][kalad[0].x]%2==0))||
+                                            ((kalad[1].x==kalad[0].x-1)&&(kalad[1].y==kalad[0].y)&&
+                                            (Map.tiles[kalad[0].y][kalad[0].x]%2!=0))){
+
+                                                kalad[1].colided = false;
+                                        }
+                                    }
 
                                     if ((kalad[2].x==kalad[0].x)&&(kalad[2].y==kalad[0].y))
                                         kalad[2].colided=false;
@@ -746,67 +736,64 @@ void Singleton::GameLoop(){
                                                 kalad[2].colided=false;
                                         }
 
-                                        EliminateBrick(kalad[0].x,kalad[0].y,balls[i].speed);
+                                        EliminateBrick(kalad[0].x,kalad[0].y,balls[i].speed());
                                     }
-
-                            }
-                            //**
-                            if (kalad[1].colided){
-
-                                if ((kalad[2].x==kalad[1].x)&&(kalad[2].y==kalad[1].y))
-                                    kalad[2].colided=false;
-                                else{
-                                    if (((kalad[2].x==kalad[1].x+1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2==0))||
-                                        ((kalad[2].x==kalad[1].x-1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2!=0))){
-                                            kalad[2].colided=false;
-                                    }
-
-                                    EliminateBrick(kalad[1].x,kalad[1].y, balls[i].speed);
                                 }
-                            }
+                                //**
+                                if (kalad[1].colided){
+
+                                    if ((kalad[2].x==kalad[1].x)&&(kalad[2].y==kalad[1].y))
+                                        kalad[2].colided=false;
+                                    else{
+                                        if (((kalad[2].x==kalad[1].x+1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2==0))||
+                                            ((kalad[2].x==kalad[1].x-1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2!=0))){
+                                                kalad[2].colided=false;
+                                        }
+
+                                        EliminateBrick(kalad[1].x,kalad[1].y, balls[i].speed());
+                                    }
+                                }
                             //**
-                            if (kalad[2].colided){
+                                if (kalad[2].colided){
 
-                                EliminateBrick(kalad[2].x,kalad[2].y, balls[i].speed);
-                            }
-                            //------------------------
+                                    EliminateBrick(kalad[2].x,kalad[2].y, balls[i].speed());
+                                }
+                                //------------------------
+                            } 
+                            else{ //so the ball does colide with the padle;
 
 
-                        } else{ //if ball hits paddle;
+                                if ((padle.isMagnet)&&
+                                    (balls[i].x+8.0f <= padle.x + ((padle.length + 1)*16 - 8))&&
+                                    (balls[i].x-8.0f >= padle.x - ((padle.length + 1)*16 - 8))){
 
-
-                            if ((padd.isMagnet)&&
-                                (balls[i].x+8.0f<=padd.x+((padd.length+1)*16-8))&&
-                                (balls[i].x-8.0f>=padd.x-((padd.length+1)*16-8))){
-
-                                    balls[i].angle = 0;
-                                    balls[i].moving = false;
-                            }
-                            else{
+                                        balls[i].angle = 0;
+                                        balls[i].deactivate();
+                                }
+                                else{
 #ifndef __ANDROID__
-                                ss.playsound(0);
+                                    ss.playsound(0);
 #endif
-                                float kprc = ((3.14f/8.0f)*2.0f)/100.0f;
-                                float iprc = ((padd.length+1)*16-8)/100.0f;
-                                balls[i].angle = (3.14f/2.0f)-((balls[i].x-padd.x)/iprc)*kprc;
-                                if ((balls[i].x + PadX > 8) && (balls[i].x + PadX < SCREEN_WIDTH - 8))
-                                    balls[i].x += PadX;
+                                    float kprc = ((3.14f/8.0f)*2.0f)/100.0f;
+                                    float iprc = ((padle.length + 1)*16-8)/100.0f;
+                                    balls[i].angle = (3.14f/2.0f)-((balls[i].x - padle.x)/iprc)*kprc;
+                                    if ((balls[i].x + PadX > 8) && (balls[i].x + PadX < SCREEN_WIDTH - 8))
+                                        balls[i].x += PadX;
+                                }
+
+                            }
+
+
+                            if (balls[i].y > padle.y + 8){
+                                balls.remove(i);
+
+                                if (balls.count()<1)
+                                    KillPadd();
                             }
 
                         }
-
-
-                        if (balls[i].y>padd.y+8){
-                            balls.remove(i);
-
-                            if (balls.count()<1)
-                                KillPadd();
-                        }
-
                     }
                 }
-                }
-
 
                 PadX = 0;
                 //------
@@ -814,18 +801,16 @@ void Singleton::GameLoop(){
                     NextLevelTimer = 1;
                 //-----
 
-                if (!PaddKilled){
+                if (!padleKilled){
                     for (unsigned i = 0; i < Prizai.count(); i++){
 
                     Prizai[i].pos = Prizai[i].pos + Prizai[i].vel;
 
-                    //TODO: use rectangle v circle collision
-                    if ((_round(Prizai[i].pos.x()) + 16 > padd.x-padd.length * 16 - 16)&&
-                            (_round(Prizai[i].pos.x()) - 16 < padd.x+padd.length * 16 + 16)){
-                        
-                        if ((padd.y-8 < _round(Prizai[i].pos.y())+16)){
-                            onPrizePickup(i);
-                        }
+                    if (CollisionCircleRectangle(Prizai[i].pos.x(), Prizai[i].pos.y(), 16,
+                                                 padle.x - padle.length * 16 - 16, padle.y - 8,
+                                                 (padle.length * 16 + 16) * 2, 16)){
+
+                        onPrizePickup(i);
 
                     }
                     else
@@ -844,16 +829,16 @@ void Singleton::GameLoop(){
                     }
                 }
             }
+            }
 
-
+            }
         }
     }
-}
 
 //------------------------------------
 void Singleton::DisplayLives(int x, int y){
 
-    Padd padas;
+    Padle padas;
     padas.length = 0;
     padas.y = y + 8;
     for (int i=0;i<lives;i++){
@@ -881,7 +866,7 @@ void Singleton::RenderScreen(){
     if (!GeneratingTexture)
         drawWallpaper();
     
-    if (TitleScreen){
+    if (gameState == TITLE){
         pics.draw(7, 200,200,0);
         WriteText(260, 370, pics, 0, "tap to play...", 0.8f, 0.8f);
         Scores.display(pics, 0, 10, 0, 0);
@@ -894,10 +879,10 @@ void Singleton::RenderScreen(){
             Map.draw(pics,3,0,0);
             for (unsigned int i = 0;i < Prizai.count();i++){
                 pics.draw(4, 
-                                      _round(Prizai[i].pos.x()),
-                                      _round(Prizai[i].pos.y()), Prizai[i].type, true);
+                                      roundDoube2Int(Prizai[i].pos.x()),
+                                      roundDoube2Int(Prizai[i].pos.y()), Prizai[i].type, true);
             }
-            padd.draw(pics, 1, PaddAlpha);
+            padle.draw(pics, 1, padleAlpha);
                         for (unsigned i=0;i<balls.count();i++)
                             balls[i].draw(pics, 2);
                         for (unsigned i=0;i<PSystems.count();i++)

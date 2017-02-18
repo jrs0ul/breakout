@@ -14,7 +14,6 @@
 
 
 
-double _round(double x){ return (x-floor(x))>0.5 ? ceil(x) : floor(x); }
 #ifndef __ANDROID__
 //----------------------------------------------------
 void convertLT(const wchar_t* txt, char * buf, int len) {

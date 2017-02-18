@@ -6,7 +6,9 @@
 //apvalina floata
 int roundDoube2Int(double x);
 //ar kolidina du apskritimai?
-bool CirclesColide(float x1,float y1,float radius1, float x2, float y2, float radius2);
+bool CollisionCircleCircle(float x1,float y1,float radius1, float x2, float y2, float radius2);
+bool CollisionCircleRectangle(float cirleCenterX, float circleCenterY, float circleRadius,
+                              float rectX, float rectY, float rectWidth, float rectHeight);
 
 Vector3D MakeVector(float speedx, float speedy, float _angle );
 

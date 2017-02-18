@@ -34,7 +34,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/SysConfig.cpp
              src/main/cpp/map.cpp
              src/main/cpp/Matrix.cpp
-             src/main/cpp/Padd.cpp
+             src/main/cpp/Padle.cpp
              src/main/cpp/Usefull.cpp
              src/main/cpp/Image.cpp
              src/main/cpp/HighScore.cpp

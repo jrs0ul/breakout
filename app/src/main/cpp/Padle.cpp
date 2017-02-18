@@ -1,15 +1,15 @@
-#include "Padd.h"
+#include "Padle.h"
 
 
-void Padd::setxy(int dx, int dy){
+void Padle::setxy(int dx, int dy){
     x=dx; y=dy;
 }
 
-void Padd::move(int dx, int dy){
+void Padle::move(int dx, int dy){
  x+=dx; y+=dy;
 }
 
-void Padd::draw(PicsContainer &img, unsigned index, float alpha){
+void Padle::draw(PicsContainer &img, unsigned index, float alpha){
 
     int frm=6;
     if (tic<20)
