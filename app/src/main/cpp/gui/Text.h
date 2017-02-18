@@ -37,6 +37,7 @@ void WriteShadedText(unsigned int x, unsigned int y,
                COLOR c2 = COLOR(1.0f, 1.0f, 1.0f, 1.0f),
                COLOR shade = COLOR(0.0, 0.0, 0.0, 1.0f));
 
+void DrawNumber(int x, int y, int number, PicsContainer& pics, unsigned index);
 
 #endif //_BITMAP_TEXT_H
 

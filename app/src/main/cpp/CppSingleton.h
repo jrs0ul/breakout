@@ -43,7 +43,12 @@ const float MAX_SPEED=8.0f;
 //============================================
 class Singleton{
     
-
+    void bulletLogic();
+    void onPadDeath();
+    void onPrizePickup(unsigned i);
+    void updateParticleSystems();
+    void drawWallpaper();
+    void scrollWallpaper();
 
 public:
   
@@ -148,7 +153,7 @@ public:
     void KillPadd();
     void ResetGame();
     void GoNextLevel();
-    void DisplayLives();
+    void DisplayLives(int x, int y);
     
     Singleton(){
 
