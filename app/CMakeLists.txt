@@ -32,7 +32,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/Particles2D.cpp
              src/main/cpp/Utils.cpp
              src/main/cpp/SysConfig.cpp
-             src/main/cpp/map.cpp
+             src/main/cpp/BreakOutMap.cpp
              src/main/cpp/Matrix.cpp
              src/main/cpp/Padle.cpp
              src/main/cpp/Usefull.cpp

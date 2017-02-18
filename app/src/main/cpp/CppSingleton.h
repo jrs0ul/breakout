@@ -51,6 +51,7 @@ class Singleton{
     void drawWallpaper();
     void scrollWallpaper();
     void onTitleScreen();
+    void clearBricks();
 
 public:
   
@@ -61,6 +62,7 @@ public:
     GameStates gameState;
 
     DArray<Prizas> Prizai;
+    DArray<ColidedBrick> cbricks;
 
     int ScreenWidth;
     int ScreenHeight;

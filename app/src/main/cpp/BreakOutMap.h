@@ -21,7 +21,7 @@ public:
     void create(unsigned nwidth, unsigned nheight);
     void destroy();
     void generate();
-    int  removetile(unsigned x, unsigned y);
+    int  removeTile(unsigned x, unsigned y);
     void draw(PicsContainer& pics, unsigned index, int x, int y);
 
 };

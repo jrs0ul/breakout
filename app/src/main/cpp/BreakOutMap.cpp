@@ -82,21 +82,24 @@ void BreakOutMap::destroy(){
     height = width = 0;
 }
 //------------------------------------------------
-int BreakOutMap::removetile(unsigned int x, unsigned int y){
+int BreakOutMap::removeTile(unsigned int x, unsigned int y){
 
-    if ((y < height) && (y>=0) && (x < width) && (x>=0)){
+    if ((y < height) && (y >= 0) && (x < width) && (x >= 0)){
 
-        int tile=tiles[y][x];
+        unsigned tile = tiles[y][x];
+        unsigned id = (tile + 1) / 2;
+
         if (tile > 0){//tile not empty
+
             bool hard = false;
-            if (((tile + 1) / 2 == 6) || ((tile + 1) / 2 == 5)){
+            if ((id == 6) || (id == 5)){
                 tiles[y][x] -= 2;
                 hard = true;
             }
             else
-                tiles[y][x]=0;
+                tiles[y][x] = 0;
         
-            if (tile%2==0){
+            if (tile%2 == 0){
                 if (!hard)
                     tiles[y][x-1] = 0;
                 else
@@ -114,14 +117,14 @@ int BreakOutMap::removetile(unsigned int x, unsigned int y){
             if ((tile > 0) && (tile < 2))
                 return tile;
             else
-                return (tile + 1) / 2;
+                return id;
         }else{
-            printf("tile x:%u y:%u is already empty\n", x, y);
+            //printf("tile x:%u y:%u is already empty\n", x, y);
             return 0;
         }
     }
     else {
-        printf("x:%u y:%u are out of limits\n", x, y);
+        //printf("x:%u y:%u are out of limits\n", x, y);
         return 0;
     }
 }

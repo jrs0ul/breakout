@@ -99,7 +99,7 @@ Vector3D Ball::reflection(float dx, float dy, unsigned char ** map, int type){
 }
 
 //-----------------------------------------------------------------------------
-bool Ball::move(BreakOutMap* map, ColidedBrick* kalad, bool reflectbricks){
+bool Ball::move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbricks){
 
     float dx = _speed;
     float dy = 0;
@@ -126,8 +126,8 @@ bool Ball::move(BreakOutMap* map, ColidedBrick* kalad, bool reflectbricks){
             if (map->tiles[ty][tx]){
                 if (reflectbricks)
                     atspindys1 = reflection(dx, dy, map->tiles, FRONT);
-                if (kalad)
-                    kalad[0] = ColidedBrick(tx,ty,true);
+                
+                kalad.add(ColidedBrick(tx,ty,true));
                 if ((!colide)&&(reflectbricks))
                     colide=true;
             }
@@ -151,8 +151,7 @@ bool Ball::move(BreakOutMap* map, ColidedBrick* kalad, bool reflectbricks){
             if (map->tiles[ty][tx]){
                 if (reflectbricks)
                     atspindys2 = reflection(dx,dy,map->tiles,LEFT);
-                if (kalad)
-                    kalad[1]=ColidedBrick(tx,ty,true);
+                kalad.add(ColidedBrick(tx,ty,true));
                 if ((!colide)&&(reflectbricks))
                     colide=true;            
             }
@@ -175,8 +174,7 @@ bool Ball::move(BreakOutMap* map, ColidedBrick* kalad, bool reflectbricks){
             if (map->tiles[ty][tx]){
                 if (reflectbricks)
                     atspindys3 = reflection(dx,dy,map->tiles,RIGHT);
-                if (kalad)
-                    kalad[2]=ColidedBrick(tx,ty,true);
+                kalad.add(ColidedBrick(tx,ty,true));
                 if ((!colide)&&(reflectbricks))
                     colide=true;
             }

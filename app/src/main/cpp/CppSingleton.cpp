@@ -301,7 +301,7 @@ void Singleton::EliminateBrick(int tx, int ty, float speed){
 
     y = ty * 16 + 8;
 
-    brickid = Map.removetile(tx, ty);
+    brickid = Map.removeTile(tx, ty);
     if (brickid){
         if (brickid == 3)
             CreatePrize(tx,ty);
@@ -614,7 +614,43 @@ void Singleton::onTitleScreen(){
         }
 
 }
+//----------------------------
+void Singleton::clearBricks(){
+    if (cbricks.count() > 1){
+        for (unsigned a = 0; a < cbricks.count() - 1; a++){
+            unsigned x0 = cbricks[a].x;
+            unsigned y0 = cbricks[a].y;
 
+            for (unsigned i = 0; i < cbricks.count(); i++){
+
+                if (i > a){
+                    unsigned x = cbricks[i].x;
+                    unsigned y = cbricks[i].y;
+                    if ((x == x0)&&(y == y0)){
+                    
+                        cbricks[i].colided = false;
+                    }
+                }
+
+            }
+        }
+    }
+
+    for (unsigned i = 0; i < cbricks.count(); i++){
+        //printf("value:%u\n", Map.tiles[cbricks[i].y][cbricks[i].x]);
+        if (cbricks[i].colided){
+            unsigned x = cbricks[i].x;
+            unsigned y = cbricks[i].y;
+            unsigned val = Map.tiles[y][x];
+            if (val)
+                EliminateBrick(x , y, balls[0].speed());
+        }
+    }
+
+    cbricks.destroy();
+
+
+}
 
 //-----------------------------
 
@@ -702,65 +738,18 @@ void Singleton::GameLoop(){
                             //doesn't this ball colide with padle ?    
                             if (!balls[i].colidesWithPadle(padle.x, padle.y, padle.length)){
 
-                                //Let's check if it colides with tiles
-                                ColidedBrick kalad[3];
                                 //moves and gets collision data
-                                if (balls[i].move(&Map, kalad, ReflectBricks)){
+                                if (balls[i].move(&Map, cbricks, ReflectBricks)){
+                                    //printf("bricks hit:%lu\n", cbricks.count());
+
 #ifndef __ANDROID__
                                     ss.playsound(5);
-#endif
+#endif                              
                                 }
+                                clearBricks();
 
-                                //let's destroy tiles that were hit by the ball
-                                if (kalad[0].colided){
-
-                                    if ((kalad[1].x==kalad[0].x)&&(kalad[1].y==kalad[0].y))
-                                        kalad[1].colided = false;
-                                    else{
-                                        if (((kalad[1].x==kalad[0].x+1) && (kalad[1].y==kalad[0].y)
-                                            && (Map.tiles[kalad[0].y][kalad[0].x]%2==0))||
-                                            ((kalad[1].x==kalad[0].x-1)&&(kalad[1].y==kalad[0].y)&&
-                                            (Map.tiles[kalad[0].y][kalad[0].x]%2!=0))){
-
-                                                kalad[1].colided = false;
-                                        }
-                                    }
-
-                                    if ((kalad[2].x==kalad[0].x)&&(kalad[2].y==kalad[0].y))
-                                        kalad[2].colided=false;
-                                    else{
-                                        if (((kalad[2].x==kalad[0].x+1)&&(kalad[2].y==kalad[0].y)&&
-                                             (Map.tiles[kalad[0].y][kalad[0].x]%2==0))||
-                                            ((kalad[2].x==kalad[0].x-1)&&(kalad[2].y==kalad[0].y)&&
-                                             (Map.tiles[kalad[0].y][kalad[0].x]%2!=0))){
-                                                kalad[2].colided=false;
-                                        }
-
-                                        EliminateBrick(kalad[0].x,kalad[0].y,balls[i].speed());
-                                    }
-                                }
-                                //**
-                                if (kalad[1].colided){
-
-                                    if ((kalad[2].x==kalad[1].x)&&(kalad[2].y==kalad[1].y))
-                                        kalad[2].colided=false;
-                                    else{
-                                        if (((kalad[2].x==kalad[1].x+1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2==0))||
-                                            ((kalad[2].x==kalad[1].x-1)&&(kalad[2].y==kalad[1].y)&&(Map.tiles[kalad[1].y][kalad[1].x]%2!=0))){
-                                                kalad[2].colided=false;
-                                        }
-
-                                        EliminateBrick(kalad[1].x,kalad[1].y, balls[i].speed());
-                                    }
-                                }
-                            //**
-                                if (kalad[2].colided){
-
-                                    EliminateBrick(kalad[2].x,kalad[2].y, balls[i].speed());
-                                }
-                                //------------------------
                             } 
-                            else{ //so the ball does colide with the padle;
+                            else{ //so the ball does colide with the padle
 
 
                                 if ((padle.isMagnet)&&

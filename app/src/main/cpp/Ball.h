@@ -47,7 +47,7 @@ public:
     void     launch(float sp = DEFAULT_SPEED, float a = 3.14f/2.0f){active = true; _speed = sp; angle = a;}
 
     void     setxy(float dx, float dy);
-    bool     move(BreakOutMap* map, ColidedBrick* kalad,bool reflectbricks);
+    bool     move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbricks);
     void     setangle(float _angle);
     void     draw(PicsContainer& spraitas, unsigned index);
     void     fall(float dy);
