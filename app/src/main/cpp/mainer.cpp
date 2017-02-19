@@ -207,6 +207,9 @@ int main( int   argc, char *argv[] ){
     
 
      while (Game.Works){
+
+        Game.TimeTicks = SDL_GetTicks();
+
         if ((SDL_GetTicks() > tick)){
 
             checkKeys();

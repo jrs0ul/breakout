@@ -251,12 +251,11 @@ void Singleton::destroy(){
 }
 
 //==================================================
-//TODO: fix time(0) 
-int FPS (void){
+int Singleton::FPS (void){
     static int ctime = 0, FPS = 0, frames = 0, frames0 = 0;
-    if ((int)time(0) >= ctime) {
-        FPS = frames-frames0;
-        ctime = time(0)+1000;
+    if ((int)TimeTicks >= ctime) {
+        FPS = frames - frames0;
+        ctime = (int)TimeTicks + 1000;
         frames0 = frames;
     }
     frames = frames+1;
@@ -886,11 +885,16 @@ void Singleton::RenderScreen(){
                         //    WriteText(150,220,pics,0,"GAME PAUSED (press P to unpause)",0.8f,0.8f,1.0f);
 
     }
-    //TODO: fix it
-    /*if (ShowDebugText)
-        DrawSomeText();  */
+    if (ShowDebugText)
+        DrawDebugText();  
 
 
 }
 //----------------------------
+void Singleton::DrawDebugText(){
 
+    char buf[256];
+    sprintf(buf, "FPS:%d", FPS());
+    WriteText(2, 60, pics, 0, buf, 0.8f, 0.8f);
+
+}

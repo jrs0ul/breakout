@@ -81,7 +81,7 @@ public:
     
     PicsContainer pics;
     
-    
+    long TimeTicks;
     
     int MouseXOld, MouseYOld, MouseX, MouseY, MouseButton, MouseButtonOld;
     
@@ -159,6 +159,8 @@ public:
     void ResetGame();
     void GoNextLevel();
     void DisplayLives(int x, int y);
+    void DrawDebugText();
+    int  FPS();
     
     Singleton(){
 
@@ -188,7 +190,7 @@ public:
         fall = false;
         lives = 3;
         Score = 0;
-        ShowDebugText = false;
+        ShowDebugText = true;
         GeneratingTexture = false;
         GamePaused = false;
         bgpushy = 0;
