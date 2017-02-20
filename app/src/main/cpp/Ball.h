@@ -8,8 +8,10 @@
 enum types{FRONT,RIGHT,LEFT};
 
 
-const float DEFAULT_SPEED = 3.5f;
-const float MAX_SPEED = 8.0f;
+const float DEFAULT_SPEED = 4.0f;
+const float SPEEDUP_STEP = 0.0015f;
+const float MAX_SPEED = 10.0f;
+const float DEFAULT_RADIUS = 8.0f;
 
 struct ColidedBrick{
     int x;
@@ -57,8 +59,13 @@ public:
     void     fall(float dy);
     bool     colidesWithPadle(int padx, int pady, int padlen);
     bool     isInMap(BreakOutMap& map, DArray<ColidedBrick>& bricks);
+    float    rad(){return radius;}
 
-             Ball(){radius = 8.0f;}
+             Ball(){
+                    angle = 0;
+                    active = false;
+                    radius = DEFAULT_RADIUS;
+             }
 private:
     Vector3D reflection(float dx, float dy, unsigned char ** map, int type);
 

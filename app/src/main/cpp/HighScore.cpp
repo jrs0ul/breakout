@@ -6,18 +6,31 @@
 
 //-------------------------------
 void HighScores::load(const char* path, int count){
-    FILE* failas;
+    FILE* failas = 0;
 
-    if ((failas=fopen(path,"rb"))==0){
-      failas=fopen(path,"wb");
-      fclose(failas);
+    destroy();
+    printf("loading scores...\n");
+
+    failas = fopen(path,"rb");
+
+    if (!failas){
+        printf("can't find score file!\n");
+        //failas = fopen(path,"wb");
+      
+        for (int i = 0; i < 10; i++){
+            Score s;
+            data.add(s);
+            printf("adding score...\n");
+        }
+       // if (failas)
+       //     fclose(failas);
     }
     else{
       
       for (int i=0;i<count;i++){
           Score scoras;
           if (!feof(failas)){
-            fread(&scoras,sizeof(Score),1,failas);
+            fread(&scoras, sizeof(Score), 1, failas);
             if ((strcmp(scoras.name,"")!=0)&&(scoras.score>0))
                 data.add(scoras);
           }
@@ -45,7 +58,8 @@ void HighScores::write(const char* path, int count){
 //--------------------
 void HighScores::addScore(const char* name, long score, int maxcount){
     if (score){
-     Score tmp(name,score);
+
+     Score tmp(name, score);
     
      int i=0;
 
@@ -78,9 +92,9 @@ void HighScores::display(PicsContainer& pics, unsigned fontIndex, int count, int
   char buf[150];
   
   if (count > (int)data.count())
-      count=data.count();
-  for (int i=0; i<count;i++){
-      sprintf(buf, "%2d. %10s : %ld",i+1,data[i].name, data[i].score);
+      count = data.count();
+  for (unsigned i = 0; i < (unsigned)count; i++){
+      sprintf(buf, "%2d. %10s : %ld", i+1, data[i].name, data[i].score);
    WriteText(x, y+i*18, pics, fontIndex, buf, 0.8f,0.8f);
   }
    

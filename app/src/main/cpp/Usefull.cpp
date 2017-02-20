@@ -3,7 +3,7 @@
 #include "Matrix.h"
  
  
-int roundDoube2Int(double x){
+int roundDouble2Int(double x){
     return int(x > 0.0 ? x + 0.5 : x - 0.5);
 }
 //-----------------------------------------

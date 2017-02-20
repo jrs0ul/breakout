@@ -14,3 +14,7 @@ pics/kakutis.tga
 8 8 
 pics/title.tga
 128 256
+pics/rod.tga
+16 16
+pics/guistuff.tga
+64 64 1

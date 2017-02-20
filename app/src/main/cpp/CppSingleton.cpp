@@ -51,6 +51,8 @@ void Singleton::init(){
     pics.loadFile("pics/digits.tga",  5, 16, 32, 0, AssetManager);
     pics.loadFile("pics/kakutis.tga", 6, 8,  8,  0, AssetManager);
     pics.loadFile("pics/title.tga",   7, 256,128,0, AssetManager);
+    pics.loadFile("pics/rod.tga",     8, 16,16,0, AssetManager);
+    pics.loadFile("pics/guistuff.tga", 9, 64, 64, 1, AssetManager);
 #endif
 
     useAccel = false;
@@ -64,25 +66,23 @@ void Singleton::init(){
     Map.generate();
 
     //TODO: let's fix this
-    //Scores.load("scores.dat",10);
+    Scores.load("scores.dat",10);
     
     char letters[] = "1234567890QWERTYUIOPASDFGHJKL:ZXCVBNM@$&*-/\\!#?_=() .,";
     NameBox.setChars((const unsigned char*)letters);
-    NameBox.setCharWidth(40);
+    NameBox.setCharWidth(50);
     NameBox.setRowLen(10);
-    NameBox.setpos(30, 60);
+    NameBox.setpos(50, 65);
 
 
-    padle.setxy(20 * 16, SCREEN_HEIGHT - 32);
+    padle.setxy(SCREEN_WIDTH/2, SCREEN_HEIGHT - 32);
 
     Ball newball;
-    newball.setxy(20*16, padle.y - 16);
-    newball.setangle(0);
-    newball.deactivate();
+    newball.setxy(SCREEN_WIDTH/2, padle.y - 8 - newball.rad());
     balls.add(newball);
 
 
-    GenerateTexture(64,64);
+    GenerateTexture(64, 64);
     GeneratingTexture = false;
 
 
@@ -301,7 +301,7 @@ void Singleton::EliminateBrick(int tx, int ty, float speed){
     if (brickid){
         if (brickid == 3)
             CreatePrize(tx,ty);
-        Score += 5 * roundDoube2Int(speed / DEFAULT_SPEED);
+        Score += 5 * roundDouble2Int(speed / DEFAULT_SPEED);
         if (brickid < 5){
 #ifndef __ANDROID__
             ss.playsound(2);
@@ -311,8 +311,8 @@ void Singleton::EliminateBrick(int tx, int ty, float speed){
             ps.setDirIntervals(Vector3D(1,1,1) , 360);
             ps.setParticleLifetime(10);
             ps.setSystemLifetime(30);
-            ps.setColors(COLOR(1,0,0,1),COLOR(1,1,0,0));
-            ps.setSizes(0.5f, 0.2f);
+            ps.setColors(COLOR(1.0f, 0.0f, 0.0f, 1.0f), COLOR(1.0f, 1.0f, 0.0f, 0.2f));
+            ps.setSizes(0.3f, 0.9f);
             ps.revive();
             PSystems.add(ps);
         }
@@ -324,7 +324,7 @@ void Singleton::TakeNewLife(){
     Ball newball;
     newball.deactivate();
     newball.angle = 0;
-    newball.setxy(padle.x, padle.y - 16);
+    newball.setxy(padle.x, padle.y - 8 - newball.rad());
     balls.add(newball);
     padle.canShoot = false;
     padle.isMagnet = false;
@@ -342,11 +342,11 @@ void Singleton::KillPadd(){
     Particle2DSystem ps;
 
     ps.setPos(padle.x, 0, padle.y);
-    ps.setDirIntervals(Vector3D(1,1,1),360);
+    ps.setDirIntervals(Vector3D(1,1,1), 360);
     ps.setParticleLifetime(50);
-    ps.setSystemLifetime(20);
-    ps.setColors(COLOR(1,1,1,1),COLOR(1,1,1,0));
-    ps.setSizes(0.5f, 0.5f);
+    ps.setSystemLifetime(50);
+    ps.setColors(COLOR(1,1,1,1), COLOR(1,1,1,0));
+    ps.setSizes(0.2f, 0.7f);
     ps.revive();
 
     PSystems.add(ps);
@@ -354,20 +354,17 @@ void Singleton::KillPadd(){
 }
 //---------------------------------
 void Singleton::ResetGame(){
-    Score = 0;
-    Scores.destroy();
     Bullets.destroy();
     Prizai.destroy();
     //TODO fix it
     //Scores.load("scores.dat",10);
-    lives = 3;
+    lives = NUM_LIVES;
     padle.length = 1;
     balls.destroy();
     Ball newball;
-    newball.setxy(padle.x, padle.y-16);
-    newball.setangle(0);
-    newball.deactivate();
+    newball.setxy(padle.x, padle.y - 8 - newball.rad());
     balls.add(newball);
+
     Map.destroy();
     Map.brickCount = 0;
     Map.create(40, 30);
@@ -376,11 +373,12 @@ void Singleton::ResetGame(){
     padle.isMagnet = false;
     ReflectBricks = true;
     //---------
-    GeneratingTexture=true;
+    GeneratingTexture = true;
     pics.remove(pics.count()-1);
-    GenerateTexture(64,64);
+    GenerateTexture(64, 64);
     GeneratingTexture = false;
 
+    printf ("%ld > %ld ?\n", Score, Scores.getScore(9).score);
     if (Score > Scores.getScore(9).score)
         NameBox.activate();
     gameState = TITLE;
@@ -555,7 +553,7 @@ void Singleton::onTitleScreen(){
 
             unsigned result = NameBox.getInput(globalKEY, mx, my);
             if (result){
-                //printf("%c\n", globalKEY);
+                printf("%c\n", globalKEY);
                 if ((result != 8) && (result != 13) && (strlen(nameToEnter) < 11)&&(result < 127)){
 
                 //printf("char %d\n", result);
@@ -584,9 +582,10 @@ void Singleton::onTitleScreen(){
     
             if (NameBox.entered){
 
-
-                Scores.addScore(nameToEnter,Score,10);
-                Scores.write("scores.dat",10);
+                printf("adding score...\n");
+                Scores.addScore(nameToEnter, Score, 10);
+                printf("done!\n");
+                //Scores.write("scores.dat",10);
                 NameBox.deactivate();
                 NameBox.reset();
                 Score=0;
@@ -825,7 +824,7 @@ void Singleton::DisplayLives(int x, int y){
     Padle padas;
     padas.length = 0;
     padas.y = y + 8;
-    for (int i=0;i<lives;i++){
+    for (int i = 0; i<lives; i++){
         padas.x = x + i * 32;
         padas.draw(pics, 1);
     }
@@ -851,19 +850,28 @@ void Singleton::RenderScreen(){
         drawWallpaper();
     
     if (gameState == TITLE){
-        pics.draw(7, 200,200,0);
-        WriteText(260, 370, pics, 0, "tap to play...", 0.8f, 0.8f);
-        Scores.display(pics, 0, 10, 0, 0);
-        
-        if (NameBox.active())
-            NameBox.draw(pics, 0, 0, 0, COLOR(1,1,1));
+                
+        if (NameBox.active()){
+            WriteShadedText(60, 10, pics, 0, "Enter your name:");
+
+            WriteShadedText(90, 30, pics, 0, nameToEnter);
+            WriteShadedText(90 + strlen(nameToEnter) * 11, 40, pics, 0, (rand()%2 == 0) ? "_" : " ");
+
+            //WriteText(SCREEN_WIDTH/2 - strlen(nameToEnter)*16*0.8f/2, 30, pics, 0, nameToEnter, 0.8f, 0.8f);
+            NameBox.draw(pics, 9, 8, 0, COLOR(1,1,1, 0.5));
+        }
+        else{
+            pics.draw(7, 200, 200,0);
+            WriteText(260, 370, pics, 0, "tap to play...", 0.8f, 0.8f);
+            Scores.display(pics, 0, 10, 5, 5);
+        }
     }
     else{ //in game
 
         Map.draw(pics,3,0,0);
         for (unsigned int i = 0;i < Prizai.count(); i++){
-            pics.draw(4, roundDoube2Int(Prizai[i].pos.x()),
-                         roundDoube2Int(Prizai[i].pos.y()), Prizai[i].type, true);
+            pics.draw(4, roundDouble2Int(Prizai[i].pos.x()),
+                         roundDouble2Int(Prizai[i].pos.y()), Prizai[i].type, true);
         }
 
         padle.draw(pics, 1, padleAlpha);
@@ -893,8 +901,10 @@ void Singleton::DrawDebugText(){
     char buf[256];
     sprintf(buf, "FPS:%d", FPS());
     WriteText(2, 60, pics, 0, buf, 0.8f, 0.8f);
-    sprintf(buf, "deltaTime:%.3f", DeltaTime);
-    WriteText(2, 85, pics, 0, buf, 0.8f, 0.8f);
+    if (balls.count()){
+        sprintf(buf, "speed:%.3f", balls[0].speed());
+        WriteText(2, 85, pics, 0, buf, 0.8f, 0.8f);
+    }
     sprintf(buf, "Accumulator:%.2f", Accumulator);
     WriteText(2, 105, pics, 0, buf, 0.8f, 0.8f);
 

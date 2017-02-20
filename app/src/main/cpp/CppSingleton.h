@@ -21,10 +21,12 @@
 
 //-------------------------------------
 
+const int NUM_LIVES = 3;
 
 enum GameStates{TITLE, GAME};
 enum PrizeTypes{GROW, SHRINK, MAGNET, NOCLIP,
                 MULTIPLY, SLOWDOWN, GUNS, DEATH};
+
 
 
 #ifndef __IPHONEOS__
@@ -180,13 +182,13 @@ public:
         Accumulator = 0;
         DT = 1000.0f/60.0f/1000.0f;
 
-        oldMoveTouch = Vector3D(-1,-1,0);
+        oldMoveTouch = Vector3D(-1, -1, 0);
 
         Works = true;
 
         tick = 0;
         fall = false;
-        lives = 3;
+        lives = NUM_LIVES;
         Score = 0;
         ShowDebugText = false;//true;
         GeneratingTexture = false;
