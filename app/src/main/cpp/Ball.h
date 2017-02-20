@@ -39,7 +39,7 @@ public:
     bool     isActive(){return active;}
     void     deactivate(){active = false;}
 
-    float    speed(){return _speed;};
+    float    speed(){return _speed;}
     void     setSpeed(float newSpeed){_speed = newSpeed;}
 
     void     speedUp();
@@ -47,11 +47,16 @@ public:
     void     launch(float sp = DEFAULT_SPEED, float a = 3.14f/2.0f){active = true; _speed = sp; angle = a;}
 
     void     setxy(float dx, float dy);
+
+
     bool     move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbricks);
+
+
     void     setangle(float _angle);
     void     draw(PicsContainer& spraitas, unsigned index);
     void     fall(float dy);
     bool     colidesWithPadle(int padx, int pady, int padlen);
+    bool     isInMap(BreakOutMap& map, DArray<ColidedBrick>& bricks);
 
              Ball(){radius = 8.0f;}
 private:

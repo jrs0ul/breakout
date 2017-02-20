@@ -13,6 +13,8 @@ public:
     int tic;
     int reloadtic;
 
+    const int maxLength = 5;
+
     Padle(){
         length = 1;
         isMagnet = false;

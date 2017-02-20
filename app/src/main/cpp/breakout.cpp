@@ -26,8 +26,6 @@ struct engine {
     struct android_app* app;
 
     ASensorManager* sensorManager;
-    const ASensor* accelerometerSensor;
-    ASensorEventQueue* sensorEventQueue;
 
     int animating;
     EGLDisplay display;
@@ -117,10 +115,8 @@ static int engine_init_display(struct engine* engine) {
 
     return 0;
 }
-
-/**
- * Just the current frame in the display.
- */
+//-----------------------------------------------------
+//
 static void engine_draw_frame(struct engine* engine) {
     if (engine->display == NULL) {
         return;
@@ -129,18 +125,34 @@ static void engine_draw_frame(struct engine* engine) {
 
     if (engine->game) {
         if (getTicks() > engine->game->tick) {
-            engine->game->logic();
-            engine->game->tick = getTicks() + 13;
-        }
-        engine->game->render();
-    }
-    glFlush();
 
-    eglSwapBuffers(engine->display, engine->surface);
+            engine->game->DeltaTime = (getTicks() - engine->game->TimeTicks) / 1000.0f;
+            engine->game->TimeTicks = getTicks();
+
+            engine->game->Accumulator += engine->game->DeltaTime;
+
+
+            while (engine->game->Accumulator >= engine->game->DT){
+                engine->game->logic();
+                engine->game->Accumulator -= engine->game->DT;
+            }
+
+
+            engine->game->render();
+            glFlush();
+            eglSwapBuffers(engine->display, engine->surface);
+
+            engine->game->tick = getTicks() + 1000/60;
+        }
+
+    }
+
+
+
 
 
 }
-
+//-------------------------------------------------------
 /**
  * Tear down the EGL context currently associated with the display.
  */
@@ -226,7 +238,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             // The window is being hidden or closed, clean it up.
             engine_term_display(engine);
             break;
-        case APP_CMD_GAINED_FOCUS:break;
+        case APP_CMD_GAINED_FOCUS: engine->animating = 1; break;
         case APP_CMD_LOST_FOCUS:
             engine->animating = 0;
             engine_draw_frame(engine);
@@ -252,12 +264,6 @@ void android_main(struct android_app* state) {
     state->onInputEvent = engine_handle_input;
     engine.app = state;
 
-    // Prepare to monitor accelerometer
-    engine.sensorManager = ASensorManager_getInstance();
-    engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-                                                                 ASENSOR_TYPE_ACCELEROMETER);
-    engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
-                                                              state->looper, LOOPER_ID_USER, NULL, NULL);
 
     if (state->savedState != NULL) {
         // We are starting with a previous saved state; restore from it.
@@ -271,8 +277,8 @@ void android_main(struct android_app* state) {
         int events;
         struct android_poll_source* source;
 
-        if (engine.game)
-            engine.game->TimeTicks = getTicks();
+        //if (engine.game)
+        //    engine.game->TimeTicks = getTicks();
 
 
         // If not animating, we will block forever waiting for events.

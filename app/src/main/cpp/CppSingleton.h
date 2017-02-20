@@ -20,8 +20,6 @@
 #include "gui/OnScreenBoard.h"
 
 //-------------------------------------
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
 
 
 enum GameStates{TITLE, GAME};
@@ -82,6 +80,12 @@ public:
     PicsContainer pics;
     
     long TimeTicks;
+    float DeltaTime;
+    float Accumulator;
+    float DT;
+    long tick;
+
+
     
     int MouseXOld, MouseYOld, MouseX, MouseY, MouseButton, MouseButtonOld;
     
@@ -102,7 +106,6 @@ public:
     
     SystemConfig sys;
     
-    int clickCount;
     
     TouchData touches;
     
@@ -112,7 +115,6 @@ public:
     //---
 
 
-    long tick;
     BreakOutMap Map;
     DArray<Ball> balls;
     Padle padle;
@@ -127,9 +129,9 @@ public:
     bool ShowDebugText;
     bool GeneratingTexture;
     bool GamePaused;
-    int bgpushy;
-    int bgpushx;
-    int scrooltim;
+    float bgShiftY;
+    float bgShiftX;
+    float scrooltim;
 
     bool  padleKilled;
     float padleAlpha;
@@ -174,14 +176,10 @@ public:
         windowed = false;
 #endif
 
-        clickCount = 0; 
-                    
-                    
-        
-                //---
-                    
-                
-                    
+
+        Accumulator = 0;
+        DT = 1000.0f/60.0f/1000.0f;
+
         oldMoveTouch = Vector3D(-1,-1,0);
 
         Works = true;
@@ -190,11 +188,11 @@ public:
         fall = false;
         lives = 3;
         Score = 0;
-        ShowDebugText = true;
+        ShowDebugText = false;//true;
         GeneratingTexture = false;
         GamePaused = false;
-        bgpushy = 0;
-        bgpushx = 0;
+        bgShiftY = 0;
+        bgShiftX = 0;
         scrooltim = 0;
         padleKilled = false;
         padleAlpha = 1.0f;

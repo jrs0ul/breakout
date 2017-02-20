@@ -204,21 +204,32 @@ int main( int   argc, char *argv[] ){
     SDL_EnableUNICODE(SDL_ENABLE);
     ConfGL();
     //LoadExtensions();
-    
 
-     while (Game.Works){
+    Game.TimeTicks = SDL_GetTicks();    
 
-        Game.TimeTicks = SDL_GetTicks();
+    while (Game.Works){
+
 
         if ((SDL_GetTicks() > tick)){
 
+            Game.DeltaTime = (SDL_GetTicks() - Game.TimeTicks) / 1000.0f;
+            Game.TimeTicks = SDL_GetTicks();
+
+            Game.Accumulator += Game.DeltaTime;
+
+            while (Game.Accumulator >= Game.DT){
+                Logic();
+                Game.Accumulator -= Game.DT;
+            }
+
             checkKeys();
-            Logic();
-            tick = SDL_GetTicks() + 13;
+            RenderScreen();
+
+            tick = SDL_GetTicks() + 1000/60;
         }
+
         SDL_Delay(1);
 
-        RenderScreen();
         process_events();
 
 

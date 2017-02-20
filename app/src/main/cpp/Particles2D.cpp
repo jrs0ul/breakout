@@ -32,7 +32,7 @@ void Particle2DSystem::drawParticles(PicsContainer& pics,
         if (!p->isdead){
             float _x = p->pos.x() + shift.x();
             float _y = p->pos.z() + shift.z();
-            if ((_x > -32) && (_x < 480) && (_y > -32) && (_y < 320))
+            //if ((_x > -32) && (_x < 480) && (_y > -32) && (_y < 320))
                 pics.draw(picIndex,
                           _x,
                           _y, 0, true, p->size, p->size, 0, 

@@ -73,20 +73,17 @@ void Singleton::init(){
     NameBox.setpos(30, 60);
 
 
+    padle.setxy(20 * 16, SCREEN_HEIGHT - 32);
 
     Ball newball;
-    newball.setxy(20*16,30*16-24);
+    newball.setxy(20*16, padle.y - 16);
     newball.setangle(0);
     newball.deactivate();
     balls.add(newball);
 
-    padle.length = 1;
-
-    padle.setxy(20 * 16, 30 * 16 - 8);
-
 
     GenerateTexture(64,64);
-    GeneratingTexture=false;
+    GeneratingTexture = false;
 
 
 }
@@ -272,16 +269,16 @@ void Singleton::CreatePrize(float x, float y){
 
     newprize.type=rand()%8;
 
-    if ((padle.length == 1) && (newprize.type == 1))
-        newprize.type = 0;
-    if ((padle.length > 5) && (newprize.type == 0))
-        newprize.type = 1;
-    if ((padle.isMagnet) && (newprize.type == 2))
-        newprize.type = 4;
-    if ((padle.canShoot) && (newprize.type == 6))
-        newprize.type = 7;
-    if ((!ReflectBricks) && (newprize.type == 3))
-        newprize.type = 7;
+    if ((padle.length == 1) && (newprize.type == SHRINK))
+        newprize.type = GROW;
+    if ((padle.length > padle.maxLength) && (newprize.type == GROW))
+        newprize.type = SHRINK;
+    if ((padle.isMagnet) && (newprize.type == MAGNET))
+        newprize.type = MULTIPLY;
+    if ((padle.canShoot) && (newprize.type == GUNS))
+        newprize.type = DEATH;
+    if ((!ReflectBricks) && (newprize.type == NOCLIP))
+        newprize.type = DEATH;
 
     Prizai.add(newprize);
 }
@@ -341,13 +338,13 @@ void Singleton::KillPadd(){
 #ifndef __ANDROID__
     ss.playsound(1);
 #endif
+
     Particle2DSystem ps;
 
-
     ps.setPos(padle.x, 0, padle.y);
-    ps.setDirIntervals(Vector3D(1,0,1),360);
+    ps.setDirIntervals(Vector3D(1,1,1),360);
     ps.setParticleLifetime(50);
-    ps.setSystemLifetime(100);
+    ps.setSystemLifetime(20);
     ps.setColors(COLOR(1,1,1,1),COLOR(1,1,1,0));
     ps.setSizes(0.5f, 0.5f);
     ps.revive();
@@ -523,20 +520,20 @@ void Singleton::updateParticleSystems(){
 //---------------------------
 void Singleton::scrollWallpaper(){
 
-    if ((scrooltim >= 0)&&(scrooltim < 5)){
-            bgpushy++;
-            if (bgpushy>=64){
-                bgpushy=0;
-                scrooltim++;
+    if ((scrooltim >= 0.0f) && (scrooltim < 5.0f)){
+            bgShiftY += (1.0f * DT * 60.0f);
+            if (bgShiftY >= 64.0f){
+                bgShiftY = 0.0f;
+                scrooltim += (1.0f * DT * 60.0f); 
             }
         }
         else{
-            bgpushx++;
-            if (bgpushx>=64){
-                bgpushx=0;
-                ++scrooltim;
-                if (scrooltim==10)
-                    scrooltim=0;
+            bgShiftX += (1.0f * DT * 60.0f);
+            if (bgShiftX >= 64.0f){
+                bgShiftX = 0.0f;
+                scrooltim += (1.0f * DT * 60.0f);
+                if (scrooltim >= 10.0f)
+                    scrooltim = 0.0f;
             }
         }
 
@@ -607,8 +604,8 @@ void Singleton::onTitleScreen(){
                 music.open("music/musicingame.ogg");
                 music.playback();
 #endif
-                bgpushy = 0;
-                bgpushx = 0;
+                bgShiftY = 0;
+                bgShiftX = 0;
             }
         }
 
@@ -721,7 +718,7 @@ void Singleton::GameLoop(){
                     }
                 }
                 if (padle.reloadtic >= 1){
-                    padle.reloadtic++;
+                    padle.reloadtic += (1.0f * DT * 60.0f);
                     if (padle.reloadtic > 20)
                         padle.reloadtic = 0;
 
@@ -739,7 +736,6 @@ void Singleton::GameLoop(){
 
                                 //moves and gets collision data
                                 if (balls[i].move(&Map, cbricks, ReflectBricks)){
-                                    //printf("bricks hit:%lu\n", cbricks.count());
 
 #ifndef __ANDROID__
                                     ss.playsound(5);
@@ -840,9 +836,9 @@ void Singleton::drawWallpaper(){
     for (int i = 0; i < 10; i++){
         for (int a = 0; a < 14; a++)
             pics.draw(pics.count() - 1,
-                      (a-2)*64+bgpushx,
-                      (i-2)*64+bgpushy,
-                       0, (100-NextLevelTimer)/100.0f);
+                      (a-2)*64 + bgShiftX,
+                      (i-2)*64 + bgShiftY,
+                       0, (100 - NextLevelTimer)/100.0f);
     }
     
 }
@@ -864,25 +860,26 @@ void Singleton::RenderScreen(){
     }
     else{ //in game
 
-            Map.draw(pics,3,0,0);
-            for (unsigned int i = 0;i < Prizai.count();i++){
-                pics.draw(4, 
-                                      roundDoube2Int(Prizai[i].pos.x()),
-                                      roundDoube2Int(Prizai[i].pos.y()), Prizai[i].type, true);
-            }
-            padle.draw(pics, 1, padleAlpha);
-                        for (unsigned i=0;i<balls.count();i++)
-                            balls[i].draw(pics, 2);
-                        for (unsigned i=0;i<PSystems.count();i++)
-                            PSystems[i].drawParticles(pics, 6);
+        Map.draw(pics,3,0,0);
+        for (unsigned int i = 0;i < Prizai.count(); i++){
+            pics.draw(4, roundDoube2Int(Prizai[i].pos.x()),
+                         roundDoube2Int(Prizai[i].pos.y()), Prizai[i].type, true);
+        }
 
-                        Bullets.draw(pics, 6);
+        padle.draw(pics, 1, padleAlpha);
+        for (unsigned i = 0; i < balls.count(); i++)
+            balls[i].draw(pics, 2);
 
-                        DisplayLives(300, 4);
-                        DrawNumber(3, 3, Score, pics, 5);
-                        //TODO:fix this
-                        //if (GamePaused)
-                        //    WriteText(150,220,pics,0,"GAME PAUSED (press P to unpause)",0.8f,0.8f,1.0f);
+        for (unsigned i = 0; i < PSystems.count(); i++)
+            PSystems[i].drawParticles(pics, 6);
+
+        Bullets.draw(pics, 6);
+
+        DisplayLives(300, 4);
+        DrawNumber(3, 3, Score, pics, 5);
+        //TODO:fix this
+        //if (GamePaused)
+        //    WriteText(150,220,pics,0,"GAME PAUSED (press P to unpause)",0.8f,0.8f,1.0f);
 
     }
     if (ShowDebugText)
@@ -896,5 +893,9 @@ void Singleton::DrawDebugText(){
     char buf[256];
     sprintf(buf, "FPS:%d", FPS());
     WriteText(2, 60, pics, 0, buf, 0.8f, 0.8f);
+    sprintf(buf, "deltaTime:%.3f", DeltaTime);
+    WriteText(2, 85, pics, 0, buf, 0.8f, 0.8f);
+    sprintf(buf, "Accumulator:%.2f", Accumulator);
+    WriteText(2, 105, pics, 0, buf, 0.8f, 0.8f);
 
 }

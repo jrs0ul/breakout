@@ -99,100 +99,98 @@ Vector3D Ball::reflection(float dx, float dy, unsigned char ** map, int type){
 }
 
 //-----------------------------------------------------------------------------
+bool Ball::isInMap(BreakOutMap& map, DArray<ColidedBrick>& bricks){
+    float tempX = x;
+    float tempY = y;
+    Vector3D vec = MakeVector(_speed, 0, angle);
+    tempX += vec.x();
+    tempY -= vec.y();
+    unsigned tiles = 0;
+
+    unsigned upX = (unsigned)(roundDoube2Int(tempX - radius)/16);
+    unsigned upY = (unsigned)(roundDoube2Int(tempY - radius)/16);
+    unsigned downX = (unsigned)(roundDoube2Int(tempX + radius)/16);
+    unsigned downY = (unsigned)(roundDoube2Int(tempY + radius)/16);
+    for (unsigned a = upY; a <= downY; a++){
+        for (unsigned i = upX; i <= downX; i++){
+            if ((a < map.h())&&(i < map.w())){
+                if (map.tiles[a][i]){
+                    if (CollisionCircleRectangle(tempX, tempY, radius,
+                                     i*16, a*16, 16, 16)){
+                        tiles++;
+                        bricks.add(ColidedBrick(i, a, true));
+                        //map.tiles[a][i] = 0;
+                    }
+                }
+            }
+        }
+    }
+    if (tiles)
+        return true;
+    return false;
+}
+//-----------------------------------------------------------------------------
 bool Ball::move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbricks){
 
-    float dx = _speed;
-    float dy = 0;
 
+    Vector3D vec= MakeVector(_speed, 0, angle);
+    Vector3D vec2= MakeVector(_speed + radius, 0, angle);
 
-    Vector3D vec= MakeVector(dx, dy, angle);
-    Vector3D vec2= MakeVector(dx + radius, dy, angle);
-
-    Vector3D vec3 = MakeVector(_speed, radius, angle - 3.14f/4.0f);
-    Vector3D vec4 = MakeVector(_speed, -radius, angle + 3.14f/4.0f);
+    Vector3D vec3 = MakeVector(_speed, radius, angle - 3.14f/4.5f);
+    Vector3D vec4 = MakeVector(_speed, -radius, angle + 3.14f/4.5f);
 
     Vector3D atspindys1(0, 0, 0);
     Vector3D atspindys2(0, 0, 0);
     Vector3D atspindys3(0, 0, 0);
 
     bool colide = false;
-    
-
-    if ((roundDoube2Int(x + vec2.x())/16 < 40) && (x+vec2.x() >= 8) && (y-vec2.y() >= 8)){       
-        int ty = roundDoube2Int(y - vec2.y()) / 16;
-        int tx = roundDoube2Int(x + vec2.x()) / 16;
-
-        if ((ty < (int)map->h()) && (ty>-1) && (tx < (int)map->w()) && (tx>-1)){
-            if (map->tiles[ty][tx]){
-                if (reflectbricks)
-                    atspindys1 = reflection(dx, dy, map->tiles, FRONT);
-                
-                kalad.add(ColidedBrick(tx,ty,true));
-                if ((!colide)&&(reflectbricks))
-                    colide=true;
-            }
-        }
-
-    }
-    else {
-        
-        atspindys1 = reflection(_speed, 0, map->tiles, FRONT);
-        if (!colide)
-                colide=true;
-        
-    }
-//-----------------------------------------
-    
-    if ((round(x + vec3.x()) / 16 < 40) && (x+vec3.x() >= 0) && (y-vec3.y() >= 0)){     
-        int ty = roundDoube2Int(y - vec3.y()) / 16;
-        int tx = roundDoube2Int(x + vec3.x()) / 16;
-
-        if ((ty < (int)map->h()) && (ty > -1)&&(tx < (int)map->w()) && (tx>-1)){
-            if (map->tiles[ty][tx]){
-                if (reflectbricks)
-                    atspindys2 = reflection(dx,dy,map->tiles,LEFT);
-                kalad.add(ColidedBrick(tx,ty,true));
-                if ((!colide)&&(reflectbricks))
-                    colide=true;            
-            }
-        }
-    }
-    else {
-        
-        atspindys2 = reflection(dx,dy,map->tiles,LEFT);
-        if (!colide)
-                colide=true;
-        
-        
-    }
-//-----------------------------------------
-    
-    if ((round(x+vec4.x()) / 16 < 40) && (x + vec4.x() >= 0) && (y-vec4.y() >= 0)){     
-        int ty = roundDoube2Int(y - vec4.y()) / 16;
-        int tx = roundDoube2Int(x + vec4.x()) / 16;
-        if ((ty<30)&&(ty>-1)&&(tx<40)&&(tx>-1)){
-            if (map->tiles[ty][tx]){
-                if (reflectbricks)
-                    atspindys3 = reflection(dx,dy,map->tiles,RIGHT);
-                kalad.add(ColidedBrick(tx,ty,true));
-                if ((!colide)&&(reflectbricks))
-                    colide=true;
-            }
-        }
-
-    }
-    else {
-        
-        atspindys3 = reflection(dx, dy, map->tiles, RIGHT);
-        if (!colide)
+    bool inMap = false;
+    inMap = isInMap(*map, kalad);
+    if (inMap){
+        if ((!colide) && (reflectbricks))
             colide = true;
-        
-        
+
+    }
+
+    if ((x + vec2.x() < SCREEN_WIDTH) && (x+vec2.x() >= radius) && (y-vec2.y() >= radius)){       
+
+        if (inMap){
+            if (reflectbricks)
+                atspindys1 = reflection(_speed, 0, map->tiles, FRONT);
+        }
+    }
+    else {
+        atspindys1 = reflection(_speed, 0, map->tiles, FRONT);
+        colide = true;
+    }
+//--------------------------
+    if ((x + vec3.x() < SCREEN_WIDTH) && (x+vec3.x() >= 0) && (y-vec3.y() >= 0)){ 
+
+        if (inMap){
+            if (reflectbricks)
+                atspindys2 = reflection(_speed, 0, map->tiles, LEFT);
+        }
+    }
+    else {
+        atspindys2 = reflection(_speed, 0, map->tiles, LEFT);
+        colide = true;
+    }
+//---------------------------
+    if ((x + vec4.x() < SCREEN_WIDTH) && (x + vec4.x() >= 0) && (y - vec4.y() >= 0)){     
+
+        if (inMap){
+            if (reflectbricks)
+                atspindys3 = reflection(_speed, 0, map->tiles, RIGHT);
+        } 
+    }
+    else {
+        atspindys3 = reflection(_speed, 0, map->tiles, RIGHT);
+        colide = true;
     }
 
 //--------------------------------
     if (colide){
-        //sudedam visus atspindzio vektorius ir randam atspindzio kampa
+        //let's add up all reflection vectors and find the reflection angle
         Vector3D atspindys = atspindys1 + atspindys2 + atspindys3;
         Vector3D gravity(0, -0.2f, 0);
         atspindys = atspindys + gravity;
@@ -203,7 +201,7 @@ bool Ball::move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbrick
     }
 
 
-
+    //ball moves
     if (!colide){
         x += vec.x();
         y -= vec.y();
@@ -212,7 +210,8 @@ bool Ball::move(BreakOutMap* map, DArray<ColidedBrick>& kalad, bool reflectbrick
     return colide;
 
 }
-//-----------------------------------------------------------------------------
+//-----------------------------
+
 void Ball::speedUp(){
 
     if (_speed < MAX_SPEED)
