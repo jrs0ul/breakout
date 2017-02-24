@@ -5,6 +5,8 @@
 #ifndef __ANDROID__
 #include "audio/SoundSystem.h"
 #include "audio/OggStream.h"
+#else
+#include "audio/AndroidSoundSystem.h"
 #endif
 #include "TextureLoader.h"
 #include "Vectors.h"
@@ -74,8 +76,9 @@ public:
     unsigned char OldKeys[20];
     Vector3D gamepad;
 
-#ifndef __ANDROID__
+
     SoundSystem ss;
+#ifndef __ANDROID__
     OggStream music;
 #endif
     

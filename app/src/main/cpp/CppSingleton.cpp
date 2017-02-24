@@ -38,6 +38,9 @@ void Singleton::init(){
     music.open("music/music.ogg");
     music.setVolume(sys.musicVolume);
     music.playback();
+#else
+    if (!ss.init())
+        ss.exit();
 #endif
 
 #ifndef __ANDROID__
@@ -242,6 +245,8 @@ void Singleton::destroy(){
 #ifndef __ANDROID__
     music.release();
     ss.freeData();
+    ss.exit();
+#else
     ss.exit();
 #endif
     pics.destroy();
