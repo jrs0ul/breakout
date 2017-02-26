@@ -18,7 +18,7 @@ class SoundSystem{
 
 
     // sound
-    int SLObjectItf  playerObj;
+    SLObjectItf  playerObj;
     int soundPlayer;
     int soundVolume;
     SLObjectItf soundQueue;
