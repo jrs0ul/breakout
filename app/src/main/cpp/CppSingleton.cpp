@@ -519,6 +519,15 @@ void Singleton::updateParticleSystems(){
     } 
 
 }
+//---------------------------
+void Singleton::onBack(){
+    if (!NameBox.active()){
+        if (gameState != TITLE)
+            ResetGame();
+    }
+
+}
+
 
 //---------------------------
 void Singleton::scrollWallpaper(){

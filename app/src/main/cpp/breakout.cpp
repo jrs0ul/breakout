@@ -13,27 +13,19 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
 
-/**
- * Our saved state data.
- */
-struct saved_state {
-    float angle;
-    int32_t x;
-    int32_t y;
-};
+
 
 struct engine {
     struct android_app* app;
 
-    ASensorManager* sensorManager;
 
     int animating;
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
+    EGLConfig config;
     int32_t width;
     int32_t height;
-    struct saved_state state;
     Singleton* game;
     bool loaded;
 };
@@ -49,6 +41,7 @@ long getTicks() {
 //-------------------------------------------------
 static int engine_init_display(struct engine* engine) {
 
+    LOGI("initializing the display\n");
     const EGLint attribs[] = {
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
             EGL_BLUE_SIZE, 8,
@@ -64,10 +57,12 @@ static int engine_init_display(struct engine* engine) {
     EGLDisplay display;
 
     if (!engine->loaded) {
+        LOGI("Let's make a new display\n");
         display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         eglInitialize(display, 0, 0);
     }
     else{
+        LOGI("Let's use an existing display\n");
         display = engine->display;
     }
     eglChooseConfig(display, attribs, &config, 1, &numConfigs);
@@ -75,10 +70,15 @@ static int engine_init_display(struct engine* engine) {
     ANativeWindow_setBuffersGeometry(engine->app->window, 0, 0, format);
 
     surface = eglCreateWindowSurface(display, config, engine->app->window, NULL);
-    if (!engine->loaded)
+    if (!engine->loaded) {
+        LOGI("Let's create a new context\n");
         context = eglCreateContext(display, config, NULL, NULL);
-    else
+
+    }
+    else {
+        LOGI("Let's use an existing context\n");
         context = engine->context;
+    }
 
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
         LOGW("Unable to eglMakeCurrent");
@@ -96,7 +96,7 @@ static int engine_init_display(struct engine* engine) {
     engine->context = context;
     engine->surface = surface;
 
-    engine->state.angle = 0;
+
 
     glDisable(GL_DEPTH_TEST);
 
@@ -169,7 +169,7 @@ static void engine_term_display(struct engine* engine) {
     //engine->display = EGL_NO_DISPLAY;
     //engine->context = EGL_NO_CONTEXT;
     engine->surface = EGL_NO_SURFACE;
-    //engine->animating = 0;
+    engine->animating = 0;
 }
 //-------------------------------------
 /**
@@ -182,6 +182,14 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
     float scaleY = 480.0f/engine->height;
     int32_t inputType = AInputEvent_getType(event);
     int32_t act = AMotionEvent_getAction(event);
+
+    if (AKeyEvent_getKeyCode(event) == AKEYCODE_BACK) {
+
+        if (engine->game)
+            engine->game->onBack();
+        return 1; // <-- prevent default handler
+    }
+
     if (inputType == AINPUT_EVENT_TYPE_MOTION) {
         switch(act) {
             case AMOTION_EVENT_ACTION_UP: {
@@ -214,9 +222,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
             // The system has asked us to save our current state.  Do so.
-            engine->app->savedState = malloc(sizeof(struct saved_state));
-            *((struct saved_state*)engine->app->savedState) = engine->state;
-            engine->app->savedStateSize = sizeof(struct saved_state);
+
             break;
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
@@ -233,27 +239,35 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             engine_term_display(engine);
             break;
         case APP_CMD_GAINED_FOCUS: engine->animating = 1; break;
-        case APP_CMD_LOST_FOCUS:
+        case APP_CMD_LOST_FOCUS: {
             engine->animating = 0;
             engine_draw_frame(engine);
+        }
             break;
         case APP_CMD_DESTROY:{
 
-
+            LOGI("Let's destroy this app\n");
             if (engine->game) {
                 engine->game->destroy();
             }
 
-            if (engine->context != EGL_NO_CONTEXT)
-                eglDestroyContext(engine->display, engine->context);
 
-            if (engine->surface != EGL_NO_SURFACE)
+            if (engine->surface != EGL_NO_SURFACE) {
+                LOGI("Let's destroy the surface\n");
                 eglDestroySurface(engine->display, engine->surface);
+            }
+
+            if (engine->context != EGL_NO_CONTEXT) {
+                LOGI("Let's destroy the context\n");
+                eglDestroyContext(engine->display, engine->context);
+            }
+
+
 
             eglTerminate(engine->display);
 
             delete engine->game;
-        }
+        } break;
     }
 }
 
@@ -276,10 +290,7 @@ void android_main(struct android_app* state) {
     engine.app = state;
 
 
-    if (state->savedState != NULL) {
-        // We are starting with a previous saved state; restore from it.
-        engine.state = *(struct saved_state*)state->savedState;
-    }
+
 
     ((struct engine*)(state->userData))->game = new Singleton();
     ((struct engine*)(state->userData))->loaded = false;
