@@ -3,7 +3,35 @@
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <android/asset_manager.h>
 #include "../DArray.h"
+
+
+struct WAVHeader{
+    char                RIFF[4];
+    unsigned long       ChunkSize;
+    char                WAVE[4];
+    char                fmt[4];
+    unsigned long       Subchunk1Size;
+    unsigned short      AudioFormat;
+    unsigned short      NumOfChan;
+    unsigned long       SamplesPerSec;
+    unsigned long       bytesPerSec;
+    unsigned short      blockAlign;
+    unsigned short      bitsPerSample;
+    char                Subchunk2ID[4];
+    unsigned long       Subchunk2Size;
+};
+struct SoundBuffer{
+    WAVHeader* header;
+    char* buffer;
+    int length;
+};
+
+
+struct SoundData{
+    char name[255];
+};
 
 
 //----------
@@ -19,23 +47,27 @@ class SoundSystem{
 
     // sound
     SLObjectItf  playerObj;
-    int soundPlayer;
-    int soundVolume;
-    SLObjectItf soundQueue;
-    // sound mixer
-    unsigned activeAudioOutSoundBuffer;
+    SLPlayItf soundPlayer;
+    SLObjectItf playerVolume;
+   // SLObjectItf bufferQueueObj;
+    SLAndroidSimpleBufferQueueItf bufferQueueObj;
+
+    DArray<SoundData> audioInfo;
+    DArray<SoundBuffer*> buffers;
+
 
 public:
-    SoundSystem(){ outPutMixObj = 0; engineObj = 0; }
+    SoundSystem(){ outPutMixObj = 0; engineObj = 0; outPutMixObj = 0; playerObj = 0; }
     bool init();
-    void loadFiles(const char* BasePath, const char* list);
+    void loadFiles(const char* BasePath, const char* list, AAssetManager* man);
     void setupListener(float * pos, float * orientation);
     void setSoundPos(unsigned int index, float * pos);
-    void playsound(unsigned int index, bool loop=false);
+    void playSound(unsigned int index, bool loop=false);
     void freeData();
     bool isPlaying(unsigned int index);
     void stopAll();
     void exit();
+
 
 };
 

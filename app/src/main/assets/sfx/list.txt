@@ -1,6 +1,0 @@
-reflect.ogg
-bang.ogg
-byeball.ogg
-gunfire.ogg
-prize.ogg
-reflect2.ogg

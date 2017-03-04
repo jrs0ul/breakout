@@ -6,6 +6,8 @@
 #include "audio/SoundSystem.h"
 #include "audio/OggStream.h"
 #else
+#include <android/log.h>
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
 #include "audio/AndroidSoundSystem.h"
 #endif
 #include "TextureLoader.h"

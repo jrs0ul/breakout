@@ -9,6 +9,7 @@
 
 
 
+
 //--------------------------------------
 void Singleton::loadConfig(){
 #ifndef __ANDROID__
@@ -39,8 +40,13 @@ void Singleton::init(){
     music.setVolume(sys.musicVolume);
     music.playback();
 #else
-    if (!ss.init())
+    if (!ss.init()) {
+        LOGI("FAIL!\n");
         ss.exit();
+    }
+    ss.loadFiles("sfx/", "list.txt", AssetManager);
+
+
 #endif
 
 #ifndef __ANDROID__
@@ -310,6 +316,8 @@ void Singleton::EliminateBrick(int tx, int ty, float speed){
         if (brickid < 5){
 #ifndef __ANDROID__
             ss.playsound(2);
+#else
+            ss.playSound(2);
 #endif
             Particle2DSystem ps;
             ps.setPos(x, 0, y);
@@ -342,6 +350,8 @@ void Singleton::KillPadd(){
     padleKilled = true;
 #ifndef __ANDROID__
     ss.playsound(1);
+#else
+    ss.playSound(1);
 #endif
 
     Particle2DSystem ps;
@@ -472,6 +482,8 @@ void Singleton::onPadDeath(){
 void Singleton::onPrizePickup(unsigned i){
 #ifndef __ANDROID__
     ss.playsound(4);
+#else
+    ss.playSound(4);
 #endif
     switch(Prizai[i].type){
         case GROW:    padle.length++; break; 
@@ -724,6 +736,8 @@ void Singleton::GameLoop(){
                     if (padle.reloadtic == 0){
 #ifndef __ANDROID__
                         ss.playsound(3);
+#else
+                        ss.playSound(3);
 #endif
                         Bullets.add(padle.x + padle.length * 16 + 12, padle.y - 20);
                         Bullets.add(padle.x - padle.length * 16 - 12, padle.y - 20);
@@ -752,6 +766,8 @@ void Singleton::GameLoop(){
 
 #ifndef __ANDROID__
                                     ss.playsound(5);
+#else
+                                    ss.playSound(5);
 #endif                              
                                 }
                                 clearBricks();
@@ -770,6 +786,8 @@ void Singleton::GameLoop(){
                                 else{
 #ifndef __ANDROID__
                                     ss.playsound(0);
+#else
+                                    ss.playSound(0);
 #endif
                                     float kprc = ((3.14f/8.0f)*2.0f)/100.0f;
                                     float iprc = ((padle.length + 1)*16-8)/100.0f;
