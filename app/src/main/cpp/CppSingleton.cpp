@@ -45,6 +45,7 @@ void Singleton::init(){
         ss.exit();
     }
     ss.loadFiles("sfx/", "list.txt", AssetManager);
+    ss.playMusic("music/music.ogg", AssetManager);
 
 
 #endif
@@ -253,6 +254,7 @@ void Singleton::destroy(){
     ss.freeData();
     ss.exit();
 #else
+    ss.stopMusic();
     ss.exit();
 #endif
     pics.destroy();
@@ -401,6 +403,9 @@ void Singleton::ResetGame(){
     music.stop();
     music.open("music/music.ogg");
     music.playback();
+#else
+    ss.stopMusic();
+    ss.playMusic("music/music.ogg", AssetManager);
 #endif
         
 }
@@ -628,6 +633,9 @@ void Singleton::onTitleScreen(){
                 music.stop();
                 music.open("music/musicingame.ogg");
                 music.playback();
+#else
+                ss.stopMusic();
+                ss.playMusic("music/musicingame.ogg", AssetManager);
 #endif
                 bgShiftY = 0;
                 bgShiftX = 0;

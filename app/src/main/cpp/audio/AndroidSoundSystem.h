@@ -34,6 +34,15 @@ struct SoundData{
 };
 
 
+struct ResourseDescriptor{
+    int32_t decriptor;
+    off_t start;
+    off_t length;
+};
+
+
+
+
 //----------
 
 class SoundSystem{
@@ -47,6 +56,7 @@ class SoundSystem{
 
     // sound
     SLObjectItf  playerObj;
+    SLObjectItf  musicPlayerObj;
     SLPlayItf soundPlayer;
     SLObjectItf playerVolume;
    // SLObjectItf bufferQueueObj;
@@ -57,7 +67,7 @@ class SoundSystem{
 
 
 public:
-    SoundSystem(){ outPutMixObj = 0; engineObj = 0; outPutMixObj = 0; playerObj = 0; }
+    SoundSystem(){ outPutMixObj = 0; engineObj = 0; outPutMixObj = 0; playerObj = 0; musicPlayerObj = 0; }
     bool init();
     void loadFiles(const char* BasePath, const char* list, AAssetManager* man);
     void setupListener(float * pos, float * orientation);
@@ -66,6 +76,8 @@ public:
     void freeData();
     bool isPlaying(unsigned int index);
     void stopAll();
+    void playMusic(const char* path, AAssetManager* man);
+    void stopMusic();
     void exit();
 
 

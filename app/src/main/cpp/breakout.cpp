@@ -170,6 +170,7 @@ static void engine_term_display(struct engine* engine) {
     //engine->context = EGL_NO_CONTEXT;
     engine->surface = EGL_NO_SURFACE;
     engine->animating = 0;
+
 }
 //-------------------------------------
 /**
@@ -241,6 +242,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS: engine->animating = 1; break;
         case APP_CMD_LOST_FOCUS: {
             engine->animating = 0;
+            engine->game->ss.stopMusic();
             engine_draw_frame(engine);
         }
             break;
